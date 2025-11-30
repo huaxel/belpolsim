@@ -23,6 +23,7 @@ export const CONSTITUENCIES: Record<ConstituencyId, Constituency> = {
 
 export const TOTAL_SEATS = 150;
 export const MAJORITY_SEATS = 76;
+export const ELECTORAL_THRESHOLD = 5.0; // 5% threshold
 export const INITIAL_BUDGET = 5000;
 export const INITIAL_ENERGY = 5;
 export const MAX_WEEKS = 12;
