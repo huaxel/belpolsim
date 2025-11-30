@@ -45,7 +45,7 @@ This is the official task list for completing Phase 2.
 -   **[x] Task 1.3 (Build Friction Algorithm):** Build and unit-test the `calculateFriction` algorithm as a pure function in `src/engine/simulations/coalition.ts`.
     -   **Owner:** Logic Engineer
     -   **QA:** QA Engineer (to write unit tests)
--   **[ ] Task 1.4 (Build Negotiation UI):** Overhaul the `CoalitionInterface.tsx` to include policy sliders and display the real-time "mood" and friction score of potential partners.
+-   **[x] Task 1.4 (Build Negotiation UI):** Overhaul the `CoalitionInterface.tsx` to include policy sliders and display the real-time "mood" and friction score of potential partners.
     -   **Owner:** Frontend Specialist
 
 ---
@@ -54,7 +54,7 @@ This is the official task list for completing Phase 2.
 
 *Visualizing the political landscape.*
 
--   **[ ] Task 2.1 (Implement 2D Compass):** Create a UI component to display parties and politicians on a 2D political compass (Economic & Social axes).
+-   **[x] Task 2.1 (Implement 2D Compass):** Create a UI component to display parties and politicians on a 2D political compass (Economic & Social axes).
     -   **Owner:** Frontend Specialist
 -   **[x] Task 2.2 (Integrate Ideology):** Use the ideology data in the game logic, particularly for AI decision-making during negotiations.
     -   **Owner:** Logic Engineer
@@ -65,7 +65,7 @@ This is the official task list for completing Phase 2.
 
 *Adding procedural realism to the final step of forming a government.*
 
--   **[ ] Task 3.1 (Implement Informateur/Formateur):** Add a simple UI flow (e.g., a modal with text from the King) to represent the *Informateur* and *Formateur* stages of the coalition phase.
+-   **[x] Task 3.1 (Implement Informateur/Formateur):** Add a simple UI flow (e.g., a modal with text from the King) to represent the *Informateur* and *Formateur* stages of the coalition phase.
     -   **Owner:** Frontend Specialist
 -   **[x] Task 3.2 (Enforce Cabinet Parity):** Add the **Cabinet Parity** rule (equal numbers of Dutch and French-speaking ministers) as a final validation check when a government is formed.
     -   **Owner:** Logic Engineer

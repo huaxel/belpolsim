@@ -1,57 +1,93 @@
-import type { Party } from '../types';
+import React from 'react';
+import type { Party, Politician } from '../types';
 
 interface PoliticalCompassProps {
     parties: Party[];
-    playerPartyId: string;
+    politicians?: Politician[]; // Optional: for individual politician visualization
 }
 
-export const PoliticalCompass = ({ parties, playerPartyId }: PoliticalCompassProps) => {
-    // Compass dimensions
-    const size = 300;
-    const center = size / 2;
-    const scale = (size / 2) / 11; // Scale 10 to fit in half size with some padding
+export const PoliticalCompass: React.FC<PoliticalCompassProps> = ({ parties, politicians }) => {
+    // Determine the bounds of the compass (0-100 for both economic and social)
+    const minEconomic = 0;
+    const maxEconomic = 100;
+    const minSocial = 0;
+    const maxSocial = 100;
 
-    // Helper to map coordinate (-10 to 10) to pixel
-    const mapX = (val: number) => center + (val * scale);
-    const mapY = (val: number) => center - (val * scale); // Invert Y because SVG Y grows downwards
+    // Canvas/Container dimensions
+    const width = 400;
+    const height = 400;
+    const padding = 20;
+    const plotWidth = width - 2 * padding;
+    const plotHeight = height - 2 * padding;
+
+    // Function to map ideology values (0-100) to pixel coordinates
+    const mapToPixels = (value: number, minVal: number, maxVal: number, plotDim: number) => {
+        // Normalize value to 0-1 range, then scale to plot dimensions
+        return (value - minVal) / (maxVal - minVal) * plotDim;
+    };
 
     return (
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col items-center">
-            <h3 className="font-bold text-gray-700 mb-4">Political Compass</h3>
+        <div className="bg-white p-6 rounded-2xl shadow-xl border border-indigo-100 flex flex-col items-center">
+            <h3 className="font-bold text-gray-700 text-lg border-b pb-2 mb-4 w-full text-center">Political Compass</h3>
+            <div
+                className="relative border-2 border-gray-300 bg-gray-50"
+                style={{ width: `${width}px`, height: `${height}px` }}
+            >
+                {/* Horizontal Axis (Economic: Left-Right) */}
+                <div className="absolute top-1/2 left-0 w-full h-px bg-gray-400"></div>
+                <div className="absolute top-1/2 left-0 transform -translate-y-1/2 -translate-x-full pr-2 text-sm text-gray-600">Left</div>
+                <div className="absolute top-1/2 right-0 transform -translate-y-1/2 translate-x-full pl-2 text-sm text-gray-600">Right</div>
 
-            <div className="relative">
-                <svg width={size} height={size} className="bg-gray-50 rounded-lg border border-gray-200">
-                    {/* Grid Lines */}
-                    <line x1={center} y1={0} x2={center} y2={size} stroke="#e5e7eb" strokeWidth="2" />
-                    <line x1={0} y1={center} x2={size} y2={center} stroke="#e5e7eb" strokeWidth="2" />
+                {/* Vertical Axis (Social: Progressive-Conservative) */}
+                <div className="absolute left-1/2 top-0 h-full w-px bg-gray-400"></div>
+                <div className="absolute left-1/2 top-0 transform -translate-x-1/2 -translate-y-full pb-2 text-sm text-gray-600">Progressive</div>
+                <div className="absolute left-1/2 bottom-0 transform -translate-x-1/2 translate-y-full pt-2 text-sm text-gray-600">Conservative</div>
 
-                    {/* Labels */}
-                    <text x={center} y={15} textAnchor="middle" className="text-[10px] fill-gray-400 font-bold">AUTHORITARIAN</text>
-                    <text x={center} y={size - 5} textAnchor="middle" className="text-[10px] fill-gray-400 font-bold">LIBERTARIAN</text>
-                    <text x={5} y={center} alignmentBaseline="middle" className="text-[10px] fill-gray-400 font-bold" transform={`rotate(-90, 10, ${center})`}>LEFT</text>
-                    <text x={size - 5} y={center} textAnchor="end" alignmentBaseline="middle" className="text-[10px] fill-gray-400 font-bold">RIGHT</text>
+                {/* Plot Parties */}
+                {parties.map(party => {
+                    const x = mapToPixels(party.ideology.economic, minEconomic, maxEconomic, plotWidth);
+                    const y = mapToPixels(party.ideology.social, minSocial, maxSocial, plotHeight);
 
-                    {/* Parties */}
-                    {parties.map(party => (
-                        <g key={party.id} transform={`translate(${mapX(party.ideology.economic)}, ${mapY(party.ideology.social)})`}>
-                            <circle
-                                r={party.id === playerPartyId ? 8 : 6}
-                                className={`${party.color.replace('bg-', 'fill-')} stroke-white stroke-2`}
-                            />
-                            <text
-                                y={-10}
-                                textAnchor="middle"
-                                className={`text-[10px] font-bold ${party.id === playerPartyId ? 'fill-black' : 'fill-gray-500'}`}
-                            >
+                    return (
+                        <div
+                            key={party.id}
+                            className={`absolute w-3 h-3 rounded-full flex items-center justify-center cursor-pointer group`}
+                            style={{
+                                left: `${padding + x - 6}px`, // -6 to center the dot
+                                top: `${padding + y - 6}px`,  // -6 to center the dot
+                                backgroundColor: party.color.replace('bg-', '#') // Assuming Tailwind color maps directly or close
+                            }}
+                            title={`${party.name} (E: ${party.ideology.economic}, S: ${party.ideology.social})`}
+                        >
+                            <span className="absolute whitespace-nowrap -bottom-6 text-xs text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity">
                                 {party.name}
-                            </text>
-                        </g>
-                    ))}
-                </svg>
-            </div>
+                            </span>
+                        </div>
+                    );
+                })}
 
-            <div className="mt-4 text-xs text-gray-500 text-center max-w-[300px]">
-                Parties are mapped based on Economic (Left/Right) and Social (Libertarian/Authoritarian) stances.
+                {/* Plot Politicians (Optional) */}
+                {politicians && politicians.map(politician => {
+                    // Assuming politicians also have ideology or derive it from party
+                    const party = parties.find(p => p.id === politician.partyId);
+                    if (!party) return null; // Should not happen with valid data
+
+                    const x = mapToPixels(party.ideology.economic, minEconomic, maxEconomic, plotWidth);
+                    const y = mapToPixels(party.ideology.social, minSocial, maxSocial, plotHeight);
+
+                    return (
+                        <div
+                            key={politician.id}
+                            className={`absolute w-2 h-2 rounded-full border border-gray-600`}
+                            style={{
+                                left: `${padding + x - 4}px`, // Smaller dot, slightly offset
+                                top: `${padding + y - 4 + (Math.random() * 10 - 5)}px`, // Small random offset to distinguish
+                                backgroundColor: party.color.replace('bg-', '#')
+                            }}
+                            title={`${politician.name} (${party.name})`}
+                        ></div>
+                    );
+                })}
             </div>
         </div>
     );
