@@ -10,7 +10,7 @@ export const MainMenu = ({ onNewGame, onLoadGame }: MainMenuProps) => {
         <div className="min-h-screen bg-gradient-to-br from-blue-900 to-gray-900 flex items-center justify-center p-4">
             <div className="bg-white p-8 rounded-3xl shadow-2xl max-w-md w-full text-center space-y-8">
                 <div>
-                    <h1 className="text-4xl font-black text-gray-900 mb-2">BELPOLSIM</h1>
+                    <h1 className="text-4xl font-black text-gray-900 mb-2">BELPOLSIM - V2 CHECK</h1>
                     <p className="text-gray-500">The Ultimate Belgian Political Simulator</p>
                 </div>
 

@@ -6,7 +6,7 @@ import { BelgiumMap } from './BelgiumMap';
 import { PollingDashboard } from './PollingDashboard';
 import { ActionGrid } from './ActionGrid';
 import { CoalitionInterface } from './CoalitionInterface';
-import { CandidateList } from './CandidateList';
+import { CandidateProfile } from './CandidateProfile';
 import { EventLog } from './EventLog';
 import { EventModal } from './EventModal';
 
@@ -68,7 +68,7 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
                         />
                     </div>
                     {/* Center: Actions & Candidates */}
-                    <div className="lg:col-span-6 space-y-6">
+                    <div className="lg:col-span-5 space-y-6">
                         {/* Actions */}
                         {!gameState.isGameOver && !gameState.isCoalitionPhase && (
                             <ActionGrid onAction={handleAction} />
@@ -83,8 +83,8 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
                             />
                         )}
 
-                        {/* Candidates List (Selected Constituency) */}
-                        <CandidateList gameState={gameState} />
+                        {/* Candidates Profile (Player Career) */}
+                        <CandidateProfile gameState={gameState} />
                     </div>
 
                     {/* Right: Log & Global Stats */}
