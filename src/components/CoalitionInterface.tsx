@@ -7,7 +7,7 @@ import { CheckCircle, XCircle } from 'lucide-react'; // Lucide-React for icons, 
 interface CoalitionInterfaceProps {
     gameState: GameState;
     onTogglePartner: (id: PartyId) => void;
-    onProposeGovernment: (proposal: { partners: PartyId[], policyStances: Stance[], ministriesOffered: number }) => void; // New prop for proposing full government
+    onFormGovernment: (proposal: { partners: PartyId[], policyStances: Stance[], ministriesOffered: Record<PartyId, number> }) => void; // Renamed to match GameView
 }
 
 // Helper to determine mood emoji based on friction (inspired by overall_setup.md example)
@@ -19,13 +19,13 @@ const getMoodEmoji = (friction: number): string => {
     return '😍'; // Thrilled
 };
 
-export const CoalitionInterface = ({ gameState, onTogglePartner, onProposeGovernment }: CoalitionInterfaceProps) => {
+export const CoalitionInterface = ({ gameState, onTogglePartner, onFormGovernment }: CoalitionInterfaceProps) => {
     const { parties, coalitionPartners, issues: gameIssues } = gameState;
     const playerParty = parties[gameState.playerPartyId];
 
     // Local state for the policy proposal being negotiated
     // Initialize with player's own stances as a starting point
-    const [negotiationStances, setNegotiationStances] = useState<Stance[]>(() => 
+    const [negotiationStances, setNegotiationStances] = useState<Stance[]>(() =>
         playerParty.stances.length > 0 ? playerParty.stances : Object.values(gameIssues).map(issue => ({
             issueId: issue.id,
             position: 50, // Default to a neutral stance if player has no initial stances
@@ -67,10 +67,10 @@ export const CoalitionInterface = ({ gameState, onTogglePartner, onProposeGovern
     };
 
     const handleFormGovernment = () => {
-        onProposeGovernment({
+        onFormGovernment({
             partners: [...coalitionPartners, gameState.playerPartyId], // Include player party in proposal
             policyStances: negotiationStances,
-            ministriesOffered: 0 // This will need to be properly defined by UI
+            ministriesOffered: ministriesOffered
         });
     };
 

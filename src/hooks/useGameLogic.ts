@@ -37,7 +37,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
             return result.newState;
         }
         case 'FORM_GOVERNMENT': {
-            const result = formGovernment(state);
+            const result = formGovernment(state, action.payload);
             // TODO: The UI should handle the result.message.
             return result.newState;
         }
@@ -86,8 +86,8 @@ export const useGameLogic = () => {
         dispatch({ type: 'TOGGLE_COALITION_PARTNER', payload: { partnerId } });
     }, [dispatch]);
 
-    const formGovernment = useCallback(() => {
-        dispatch({ type: 'FORM_GOVERNMENT' });
+    const formGovernment = useCallback((proposal: { partners: PartyId[], policyStances: any[], ministriesOffered: Record<PartyId, number> }) => {
+        dispatch({ type: 'FORM_GOVERNMENT', payload: proposal });
     }, [dispatch]);
 
     const setSelectedConstituency = useCallback((constituencyId: ConstituencyId) => {

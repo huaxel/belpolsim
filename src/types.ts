@@ -89,6 +89,7 @@ export interface GameState {
     maxEnergy: number;
 
     playerCharacter: PlayerCharacter;
+    playerPartyId: PartyId;
     isGameOver: boolean;
     isCoalitionPhase: boolean;
     coalitionPartners: PartyId[];

@@ -103,6 +103,7 @@ export const createInitialState = (): GameState => {
             homeConstituency: 'antwerp',
             internalClout: 50
         },
+        playerPartyId: 'player',
         isGameOver: false,
         isCoalitionPhase: false,
         coalitionPartners: [],
@@ -119,9 +120,9 @@ export const createInitialState = (): GameState => {
                 { issueId: 'wealth_tax', position: 10, salience: 6 },
             ]),
             vb: initParty('vb', 'Vlaams Belang', 'bg-gray-800', true, ['flanders', 'brussels'], 22, { economic: 2, social: 9 }, [
-                 { issueId: 'strict_immigration', position: 100, salience: 10 },
-                 { issueId: 'nuclear_exit', position: 50, salience: 3 }, // Less salient
-                 { issueId: 'public_transport', position: 30, salience: 2 },
+                { issueId: 'strict_immigration', position: 100, salience: 10 },
+                { issueId: 'nuclear_exit', position: 50, salience: 3 }, // Less salient
+                { issueId: 'public_transport', position: 30, salience: 2 },
             ]),
             vooruit: initParty('vooruit', 'Vooruit', 'bg-red-500', false, ['flanders', 'brussels'], 15, { economic: -4, social: -3 }, [
                 { issueId: 'wealth_tax', position: 85, salience: 9 },
