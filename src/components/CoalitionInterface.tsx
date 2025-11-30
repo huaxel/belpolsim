@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
-import type { GameState, PartyId, Stance, Issue, IssueId } from '../types';
+import type { GameState, PartyId, Stance, IssueId } from '../types';
 import { TOTAL_SEATS, MAJORITY_SEATS } from '../constants';
-import { calculateAllFrictions } from '../engine/simulations/coalition'; // Import the new friction calculator
-import { CheckCircle, XCircle } from 'lucide-react'; // Lucide-React for icons, as per rules
+import { calculateAllFrictions } from '../engine/simulations/coalition';
+import { CheckCircle } from 'lucide-react';
 
 interface CoalitionInterfaceProps {
     gameState: GameState;
@@ -10,12 +10,12 @@ interface CoalitionInterfaceProps {
     onFormGovernment: (proposal: { partners: PartyId[], policyStances: Stance[], ministriesOffered: Record<PartyId, number> }) => void; // Renamed to match GameView
 }
 
-// Helper to determine mood emoji based on friction (inspired by overall_setup.md example)
-const getMoodEmoji = (friction: number): string => {
-    if (friction > 80) return '😡'; // Furious
-    if (friction > 60) return '😠'; // Angry
-    if (friction > 40) return '😐'; // Neutral
-    if (friction > 20) return '😊'; // Pleased
+// Helper to determine mood emoji based on friction relative to threshold
+const getMoodEmoji = (friction: number, threshold: number): string => {
+    if (friction > threshold * 1.5) return '😡'; // Furious (Way above threshold)
+    if (friction > threshold) return '😠'; // Angry (Above threshold)
+    if (friction > threshold * 0.5) return '😐'; // Neutral
+    if (friction > threshold * 0.2) return '😊'; // Pleased
     return '😍'; // Thrilled
 };
 
@@ -32,7 +32,7 @@ export const CoalitionInterface = ({ gameState, onTogglePartner, onFormGovernmen
             salience: 5 // Default salience
         }))
     );
-    const [ministriesOffered, setMinistriesOffered] = useState<Record<PartyId, number>>({});
+    const [ministriesOffered, setMinistriesOffered] = useState<Partial<Record<PartyId, number>>>({});
 
     // Calculate total seats for the current selected partners
     const currentCoalitionSeats = playerParty.totalSeats + coalitionPartners.reduce((acc, id) => acc + parties[id].totalSeats, 0);
@@ -68,9 +68,9 @@ export const CoalitionInterface = ({ gameState, onTogglePartner, onFormGovernmen
 
     const handleFormGovernment = () => {
         onFormGovernment({
-            partners: [...coalitionPartners, gameState.playerPartyId], // Include player party in proposal
+            partners: [...coalitionPartners, gameState.playerPartyId],
             policyStances: negotiationStances,
-            ministriesOffered: ministriesOffered
+            ministriesOffered: ministriesOffered as Record<PartyId, number>
         });
     };
 
@@ -92,51 +92,83 @@ export const CoalitionInterface = ({ gameState, onTogglePartner, onFormGovernmen
                                 const isSelected = coalitionPartners.includes(p.id);
                                 const isExtremist = p.isExtremist;
                                 const friction = partnerFrictions.get(p.id) || 0;
-                                const moodEmoji = getMoodEmoji(friction);
+                                const threshold = p.negotiationThreshold || 50; // Fallback
+                                const moodEmoji = getMoodEmoji(friction, threshold);
+                                const isImpossible = friction > threshold * 1.5;
 
                                 return (
-                                    <div key={p.id} className="w-full flex justify-between items-center group">
-                                        <button
-                                            onClick={() => onTogglePartner(p.id)}
-                                            disabled={isExtremist && !isSelected} // Allow deselecting even if extremist
-                                            className={`flex-grow p-4 rounded-xl border-2 transition-all flex justify-between items-center mr-2
-                                                ${isSelected
-                                                    ? 'border-indigo-600 bg-indigo-50 shadow-md'
-                                                    : isExtremist
-                                                        ? 'border-gray-100 bg-gray-50 opacity-70 cursor-not-allowed'
-                                                        : 'border-gray-200 bg-white hover:border-indigo-300 hover:shadow-sm'
-                                                }
-                                            `}
-                                        >
-                                            <div className="flex flex-col text-left">
-                                                <div className="flex items-center space-x-2">
-                                                    <span className={`w-3 h-3 rounded-full ${p.color.replace('bg-', 'bg-')}`}></span>
-                                                    <span className="font-bold text-gray-900">{p.name}</span>
-                                                    {isExtremist && <span className="text-[10px] uppercase font-bold bg-red-100 text-red-600 px-2 py-0.5 rounded-full">Extremist</span>}
+                                    <div key={p.id} className="w-full flex flex-col group border-b border-gray-100 pb-4 last:border-0">
+                                        <div className="flex justify-between items-center w-full">
+                                            <button
+                                                onClick={() => onTogglePartner(p.id)}
+                                                disabled={(isExtremist || isImpossible) && !isSelected}
+                                                className={`flex-grow p-4 rounded-xl border-2 transition-all flex justify-between items-center mr-2
+                                                    ${isSelected
+                                                        ? 'border-indigo-600 bg-indigo-50 shadow-md'
+                                                        : (isExtremist || isImpossible)
+                                                            ? 'border-gray-100 bg-gray-50 opacity-70 cursor-not-allowed'
+                                                            : 'border-gray-200 bg-white hover:border-indigo-300 hover:shadow-sm'
+                                                    }
+                                                `}
+                                            >
+                                                <div className="flex flex-col text-left">
+                                                    <div className="flex items-center space-x-2">
+                                                        <span className={`w-3 h-3 rounded-full ${p.color.replace('bg-', 'bg-')}`}></span>
+                                                        <span className="font-bold text-gray-900">{p.name}</span>
+                                                        {isExtremist && <span className="text-[10px] uppercase font-bold bg-red-100 text-red-600 px-2 py-0.5 rounded-full">Extremist</span>}
+                                                        {!isExtremist && isImpossible && <span className="text-[10px] uppercase font-bold bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full">Refuses</span>}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500 mt-1">
+                                                        Seats: {p.totalSeats}
+                                                    </div>
                                                 </div>
-                                                <div className="text-xs text-gray-500 mt-1">
-                                                    Seats: {p.totalSeats}
+                                                <div className="flex flex-col items-end">
+                                                    <span className="text-3xl">{moodEmoji}</span>
+                                                    <span className="text-xs text-gray-400 mt-1" title={`Friction: ${friction.toFixed(1)}`}>
+                                                        Friction: {friction.toFixed(0)}
+                                                    </span>
                                                 </div>
-                                            </div>
-                                            <div className="flex flex-col items-end">
-                                                <span className="text-3xl">{moodEmoji}</span>
-                                                <span className="text-xs text-gray-400 mt-1" title={`Friction: ${friction.toFixed(1)}`}>
-                                                    Friction: {friction.toFixed(0)}
-                                                </span>
-                                            </div>
-                                        </button>
-                                        {isSelected && (
-                                            <div className="flex flex-col items-center">
-                                                <label htmlFor={`ministries-${p.id}`} className="text-xs text-gray-500 mb-1">Ministries</label>
-                                                <input
-                                                    id={`ministries-${p.id}`}
-                                                    type="number"
-                                                    min="0"
-                                                    max="5" // Arbitrary max for now
-                                                    value={ministriesOffered[p.id] || 0}
-                                                    onChange={(e) => handleMinistryOfferChange(p.id, parseInt(e.target.value))}
-                                                    className="w-16 p-1 text-center border rounded-md text-gray-700"
-                                                />
+                                            </button>
+
+                                            {isSelected && (
+                                                <div className="flex flex-col items-center">
+                                                    <label htmlFor={`ministries-${p.id}`} className="text-xs text-gray-500 mb-1">Ministries</label>
+                                                    <input
+                                                        id={`ministries-${p.id}`}
+                                                        type="number"
+                                                        min="0"
+                                                        max="5"
+                                                        value={ministriesOffered[p.id] || 0}
+                                                        onChange={(e) => handleMinistryOfferChange(p.id, parseInt(e.target.value))}
+                                                        className="w-16 p-1 text-center border rounded-md text-gray-700"
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Friction Breakdown */}
+                                        {(isSelected || friction > 20) && (
+                                            <div className="mt-2 pl-4 text-xs text-gray-500 w-full">
+                                                <span className="font-bold">Top Conflicts:</span>
+                                                <ul className="list-disc list-inside ml-2">
+                                                    {negotiationStances
+                                                        .map(stance => {
+                                                            const partyStance = p.stances.find(s => s.issueId === stance.issueId);
+                                                            if (!partyStance) return null;
+                                                            const diff = Math.abs(stance.position - partyStance.position);
+                                                            const impact = diff * partyStance.salience;
+                                                            return { issueId: stance.issueId, impact, diff, partyPos: partyStance.position };
+                                                        })
+                                                        .filter((item): item is { issueId: IssueId, impact: number, diff: number, partyPos: number } => item !== null && item.impact > 50)
+                                                        .sort((a, b) => b.impact - a.impact)
+                                                        .slice(0, 3)
+                                                        .map(conflict => (
+                                                            <li key={conflict.issueId}>
+                                                                {gameIssues[conflict.issueId].name} (Them: {conflict.partyPos}, You: {negotiationStances.find(s => s.issueId === conflict.issueId)?.position})
+                                                            </li>
+                                                        ))
+                                                    }
+                                                </ul>
                                             </div>
                                         )}
                                     </div>
@@ -157,21 +189,39 @@ export const CoalitionInterface = ({ gameState, onTogglePartner, onFormGovernmen
                                     {issue.name}
                                 </label>
                                 <p className="text-xs text-gray-500 mb-3">{issue.description}</p>
-                                <div className="flex items-center space-x-4">
-                                    <span className="text-sm w-12 text-gray-600">0</span>
+                                <div className="relative w-full h-8 flex items-center">
                                     <input
                                         type="range"
                                         min="0"
                                         max="100"
                                         value={position}
                                         onChange={e => handleSliderChange(issue.id, parseInt(e.target.value))}
-                                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg"
-                                        style={{ accentColor: playerParty.color.replace('bg-', '') }} // Apply player color to slider
+                                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer z-10 relative"
+                                        style={{ accentColor: playerParty.color.replace('bg-', '') }}
                                     />
-                                    <span className="text-sm w-12 text-right text-gray-600">100</span>
-                                    <div className="w-16 text-center bg-indigo-100 text-indigo-800 font-bold rounded-md p-1">
-                                        {position}
-                                    </div>
+
+                                    {/* Partner Stance Markers */}
+                                    {coalitionPartners.map(partnerId => {
+                                        const partner = parties[partnerId];
+                                        const partnerStance = partner.stances.find(s => s.issueId === issue.id);
+                                        if (!partnerStance) return null;
+
+                                        return (
+                                            <div
+                                                key={partnerId}
+                                                className={`absolute w-4 h-4 rounded-full border-2 border-white shadow-sm z-20 pointer-events-none transform -translate-y-1/2 top-1/2 transition-all duration-300`}
+                                                style={{
+                                                    left: `calc(${partnerStance.position}% - 8px)`,
+                                                    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue(`--color-${partner.color.replace('bg-', '')}`) || partner.color.replace('bg-', '').replace('red', '#ef4444').replace('blue', '#3b82f6').replace('green', '#22c55e').replace('yellow', '#eab308').replace('orange', '#f97316').replace('cyan', '#06b6d4').replace('gray', '#374151') // Fallback color mapping since we can't easily resolve tailwind classes to hex in JS without a map
+                                                }}
+                                                title={`${partner.name} wants: ${partnerStance.position}`}
+                                            ></div>
+                                        );
+                                    })}
+                                </div>
+                                <span className="text-sm w-12 text-right text-gray-600">100</span>
+                                <div className="w-16 text-center bg-indigo-100 text-indigo-800 font-bold rounded-md p-1 ml-2">
+                                    {position}
                                 </div>
                             </div>
                         );
@@ -216,6 +266,6 @@ export const CoalitionInterface = ({ gameState, onTogglePartner, onFormGovernmen
                     </button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };

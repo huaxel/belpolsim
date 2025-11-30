@@ -1,5 +1,4 @@
-import { MAJORITY_SEATS } from '../constants';
-import type { GameState, PartyId, ActionResult } from '../types';
+import type { GameState, PartyId, Stance, Candidate, ActionResult } from '../types';
 
 export const toggleCoalitionPartner = (state: GameState, partnerId: PartyId): ActionResult => {
     const partner = state.parties[partnerId];
@@ -54,39 +53,57 @@ export const formGovernment = (
     // We'll assume for now that parties provide ministers of their own language region.
     // This is a simplification.
 
-    const simulatedMinisters: any[] = [];
+    // --- Real Minister Assignment Logic ---
+    const ministers: any[] = []; // Should be Candidate[]
 
+    // We need to pick actual candidates to be ministers.
+    // For MVP, we'll just pick the first N candidates from the party's lists.
     Object.entries(proposalPayload.ministriesOffered).forEach(([partyId, count]) => {
         const party = state.parties[partyId as PartyId];
-        // Determine language based on first eligible constituency region (heuristic)
-        const region = state.parties[partyId as PartyId].eligibleConstituencies[0];
-        // Simple heuristic: if Flanders -> Dutch, else French. (Brussels is complex, but this will do for MVP)
-        const language = (region === 'antwerp' || region === 'east_flanders' || region === 'west_flanders' || region === 'limburg' || region === 'flemish_brabant') ? 'dutch' : 'french';
+        let assignedCount = 0;
 
-        for (let i = 0; i < count; i++) {
-            simulatedMinisters.push({ language });
+        // Iterate through constituencies to find candidates
+        for (const constituencyId of party.eligibleConstituencies) {
+            const candidates = party.candidates[constituencyId];
+            for (const candidate of candidates) {
+                if (assignedCount < count) {
+                    ministers.push(candidate);
+                    assignedCount++;
+                } else {
+                    break;
+                }
+            }
+            if (assignedCount >= count) break;
         }
     });
 
     const proposal = {
         partners: proposalPayload.partners,
-        ministers: simulatedMinisters, // Passed to validation
+        ministers: ministers,
         primeMinister: { language: 'dutch' } // Placeholder, needs UI selection
     };
 
     // Validate using the shared validation logic
-    // We cast simulatedMinisters to any because the validator expects full Politician objects, 
-    // but currently only checks .language property.
     const validation = validateGovernment(proposal as any, state);
 
     if (validation.isValid) {
         const total = proposal.partners.reduce((sum, id) => sum + state.parties[id].totalSeats, 0);
-        const message = `GOVERNMENT FORMED with ${total} seats!`;
+        const message = `GOVERNMENT FORMED with ${total} seats! Entering Governing Phase.`;
+
         return {
             newState: {
                 ...state,
-                isGameOver: true,
+                isGameOver: false, // Game continues!
                 isCoalitionPhase: false,
+                isGoverning: true,
+                government: {
+                    partners: proposalPayload.partners,
+                    primeMinister: null, // To be implemented
+                    ministers: ministers,
+                    agreement: proposalPayload.policyStances,
+                    stability: 100 // Start with high stability
+                },
+                nationalBudget: 10000, // Initial national budget
                 eventLog: [...state.eventLog, message]
             },
             success: true,

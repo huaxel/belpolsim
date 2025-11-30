@@ -1,4 +1,4 @@
-import { PartyId } from '../../types';
+import type { PartyId } from '../../types';
 
 /**
  * Calculates the number of seats each party wins in a given constituency using the D'Hondt method,
@@ -13,11 +13,11 @@ export function calculateDdHondtSeats(
     constituencyVotes: Record<PartyId, number>,
     totalSeats: number,
     electoralThreshold: number = 0.05 // Default to 5%
-): Record<PartyId, number> {
-    const seatsWon: Record<PartyId, number> = {};
+): Partial<Record<PartyId, number>> {
+    const seatsWon: Partial<Record<PartyId, number>> = {};
     const eligibleParties: PartyId[] = [];
-    const divisors: Record<PartyId, number> = {};
-    const currentQuotients: Record<PartyId, number> = {};
+    const divisors: Partial<Record<PartyId, number>> = {};
+    const currentQuotients: Partial<Record<PartyId, number>> = {};
 
     let totalConstituencyVotes = 0;
     for (const partyId in constituencyVotes) {
@@ -50,16 +50,16 @@ export function calculateDdHondtSeats(
         let maxQuotient = -1;
 
         for (const partyId of eligibleParties) {
-            if (currentQuotients[partyId] > maxQuotient) {
-                maxQuotient = currentQuotients[partyId];
+            if (currentQuotients[partyId]! > maxQuotient) {
+                maxQuotient = currentQuotients[partyId]!;
                 winningParty = partyId;
             }
         }
 
         if (winningParty !== null) {
-            seatsWon[winningParty]++;
-            divisors[winningParty]++;
-            currentQuotients[winningParty] = constituencyVotes[winningParty] / divisors[winningParty];
+            seatsWon[winningParty]!++;
+            divisors[winningParty]!++;
+            currentQuotients[winningParty] = constituencyVotes[winningParty] / divisors[winningParty]!;
         } else {
             // This should ideally not happen if totalSeats > 0 and eligibleParties.length > 0
             // but as a safeguard, if no party can win (e.g., all quotients become 0), break.

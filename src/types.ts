@@ -27,6 +27,7 @@ export interface Candidate {
     expertise: number; // 1-10
     internalClout: number; // 0-100, determines list position
     language: Language;
+    partyId: PartyId;
 }
 
 export interface PlayerCharacter {
@@ -47,6 +48,7 @@ export interface Party {
     constituencySeats: Record<ConstituencyId, number>;
     totalSeats: number;
     candidates: Record<ConstituencyId, Candidate[]>;
+    negotiationThreshold: number; // 0-100, higher means more willing to compromise
 }
 
 // --- Issues and Stances (for Friction System) ---
@@ -79,6 +81,16 @@ export interface GameEvent {
     choices: EventChoice[];
 }
 
+// --- Government ---
+
+export interface Government {
+    partners: PartyId[];
+    primeMinister: Candidate | null;
+    ministers: Candidate[];
+    agreement: Stance[];
+    stability: number; // 0-100
+}
+
 // --- Game State & Engine ---
 
 export interface GameState {
@@ -92,11 +104,16 @@ export interface GameState {
     playerPartyId: PartyId;
     isGameOver: boolean;
     isCoalitionPhase: boolean;
+    isGoverning: boolean; // New phase
     coalitionPartners: PartyId[];
     selectedConstituency: ConstituencyId;
 
     parties: Record<PartyId, Party>;
     issues: Record<IssueId, Issue>;
+
+    government: Government | null;
+    nationalBudget: number; // Distinct from campaign budget
+
     eventLog: string[];
     currentEvent: GameEvent | null;
 }

@@ -18,7 +18,7 @@ import type {
 } from '../types';
 
 // --- Helper: Generate Initial Polling & Candidates ---
-const generateCandidates = (partyId: string, constituencyId: string, count: number, language: Language): Candidate[] => {
+const generateCandidates = (partyId: PartyId, constituencyId: ConstituencyId, count: number, language: Language): Candidate[] => {
     return Array.from({ length: count }).map((_, i) => ({
         id: `${partyId}-${constituencyId}-${i}`,
         name: `${partyId.toUpperCase()} Candidate ${i + 1}`,
@@ -26,11 +26,8 @@ const generateCandidates = (partyId: string, constituencyId: string, count: numb
         charisma: Math.floor(Math.random() * 10) + 1,
         expertise: Math.floor(Math.random() * 10) + 1,
         internalClout: Math.floor(Math.random() * 100),
-        language: language,
-        constituency: constituencyId as ConstituencyId,
-        partyId: partyId as PartyId,
-        ministerialRole: null,
-        popularity: 0,
+        language,
+        partyId,
     }));
 };
 
@@ -43,7 +40,8 @@ const initParty = (
     regions: RegionId[],
     basePolling: number,
     ideology: { economic: number, social: number },
-    stances: Stance[]
+    stances: Stance[],
+    negotiationThreshold: number = 50 // Default threshold
 ): Party => {
     const constituencyIds = Object.keys(CONSTITUENCIES) as ConstituencyId[];
     const eligibleC = constituencyIds.filter(c => regions.includes(CONSTITUENCIES[c].region));
@@ -71,7 +69,8 @@ const initParty = (
         constituencyPolling: polling as Record<ConstituencyId, number>,
         constituencySeats: seats as Record<ConstituencyId, number>,
         totalSeats: 0,
-        candidates: candidates as Record<ConstituencyId, Candidate[]>
+        candidates: candidates as Record<ConstituencyId, Candidate[]>,
+        negotiationThreshold
     };
 };
 
@@ -106,51 +105,54 @@ export const createInitialState = (): GameState => {
         playerPartyId: 'player',
         isGameOver: false,
         isCoalitionPhase: false,
+        isGoverning: false,
         coalitionPartners: [],
         selectedConstituency: 'antwerp',
+        government: null,
+        nationalBudget: 0,
         parties: {
             player: initParty('player', 'Ecolo-Groen (You)', 'bg-green-600', false, ['flanders', 'wallonia', 'brussels'], 12, { economic: -6, social: -7 }, [
                 { issueId: 'nuclear_exit', position: 80, salience: 9 },
                 { issueId: 'wealth_tax', position: 75, salience: 8 },
                 { issueId: 'strict_immigration', position: 20, salience: 4 },
-            ]),
+            ], 50),
             nva: initParty('nva', 'N-VA', 'bg-yellow-500', false, ['flanders', 'brussels'], 25, { economic: 6, social: 5 }, [
                 { issueId: 'regional_autonomy', position: 90, salience: 10 },
                 { issueId: 'strict_immigration', position: 85, salience: 8 },
                 { issueId: 'wealth_tax', position: 10, salience: 6 },
-            ]),
+            ], 40),
             vb: initParty('vb', 'Vlaams Belang', 'bg-gray-800', true, ['flanders', 'brussels'], 22, { economic: 2, social: 9 }, [
                 { issueId: 'strict_immigration', position: 100, salience: 10 },
                 { issueId: 'nuclear_exit', position: 50, salience: 3 }, // Less salient
                 { issueId: 'public_transport', position: 30, salience: 2 },
-            ]),
+            ], 20),
             vooruit: initParty('vooruit', 'Vooruit', 'bg-red-500', false, ['flanders', 'brussels'], 15, { economic: -4, social: -3 }, [
                 { issueId: 'wealth_tax', position: 85, salience: 9 },
                 { issueId: 'public_transport', position: 80, salience: 7 },
                 { issueId: 'retirement_67', position: 20, salience: 8 },
-            ]),
+            ], 60),
             cdv: initParty('cdv', 'CD&V', 'bg-orange-500', false, ['flanders', 'brussels'], 12, { economic: 2, social: 4 }, [
                 { issueId: 'retirement_67', position: 70, salience: 7 },
                 { issueId: 'nuclear_exit', position: 40, salience: 5 },
-            ]),
+            ], 70),
             ps: initParty('ps', 'PS', 'bg-red-600', false, ['wallonia', 'brussels'], 25, { economic: -7, social: -4 }, [
                 { issueId: 'wealth_tax', position: 90, salience: 9 },
                 { issueId: 'retirement_67', position: 15, salience: 8 },
                 { issueId: 'regional_autonomy', position: 30, salience: 5 },
-            ]),
+            ], 50),
             mr: initParty('mr', 'MR', 'bg-blue-600', false, ['wallonia', 'brussels'], 22, { economic: 7, social: -2 }, [
                 { issueId: 'nuclear_exit', position: 20, salience: 6 },
                 { issueId: 'wealth_tax', position: 5, salience: 8 },
-            ]),
+            ], 50),
             ptb: initParty('ptb', 'PTB-PVDA', 'bg-red-800', true, ['flanders', 'wallonia', 'brussels'], 15, { economic: -9, social: -5 }, [
                 { issueId: 'wealth_tax', position: 100, salience: 10 },
                 { issueId: 'public_transport', position: 90, salience: 7 },
                 { issueId: 'retirement_67', position: 0, salience: 9 },
-            ]),
+            ], 20),
             lesengages: initParty('lesengages', 'Les Engagés', 'bg-cyan-500', false, ['wallonia', 'brussels'], 15, { economic: 0, social: 2 }, [
                 { issueId: 'retirement_67', position: 60, salience: 6 },
                 { issueId: 'nuclear_exit', position: 60, salience: 5 },
-            ]),
+            ], 65),
         },
         issues: issues,
         eventLog: ['Welcome to the Federal Campaign! 150 seats are at stake across 11 constituencies.'],

@@ -2,7 +2,8 @@ import { CONSTITUENCIES, ELECTORAL_THRESHOLD, MAJORITY_SEATS } from "../constant
 import type { GameState, PartyId, ConstituencyId, Candidate } from "../types";
 
 export const calculateElection = (state: GameState): GameState => {
-    const parties = { ...state.parties };
+    // Deep copy parties to avoid mutating the previous state
+    const parties = JSON.parse(JSON.stringify(state.parties));
     const partyIds = Object.keys(parties) as PartyId[];
     const cIds = Object.keys(CONSTITUENCIES) as ConstituencyId[];
 

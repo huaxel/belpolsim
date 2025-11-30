@@ -9,6 +9,7 @@ import { CoalitionInterface } from './CoalitionInterface';
 import { CandidateProfile } from './CandidateProfile';
 import { EventLog } from './EventLog';
 import { EventModal } from './EventModal';
+import { GovernmentView } from './GovernmentView';
 
 interface GameViewProps {
     shouldLoad: boolean;
@@ -70,7 +71,7 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
                     {/* Center: Actions & Candidates */}
                     <div className="lg:col-span-5 space-y-6">
                         {/* Actions */}
-                        {!gameState.isGameOver && !gameState.isCoalitionPhase && (
+                        {!gameState.isGameOver && !gameState.isCoalitionPhase && !gameState.isGoverning && (
                             <ActionGrid onAction={handleAction} />
                         )}
 
@@ -81,6 +82,11 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
                                 onTogglePartner={toggleCoalitionPartner}
                                 onFormGovernment={formGovernment}
                             />
+                        )}
+
+                        {/* Government UI */}
+                        {gameState.isGoverning && (
+                            <GovernmentView gameState={gameState} />
                         )}
 
                         {/* Candidates Profile (Player Career) */}
