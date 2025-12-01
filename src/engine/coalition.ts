@@ -8,7 +8,7 @@
  * - Majority requirement: Coalition must have ≥76 seats
  */
 
-import type { GameState, PartyId, Politician, ActionResult } from '../types';
+import type { GameState, PartyId, Politician, ActionResult, Stance } from '../types';
 import { validateGovernment } from './government';
 
 /**
@@ -69,7 +69,7 @@ export const formGovernment = (
     state: GameState,
     proposalPayload: {
         partners: PartyId[],
-        policyStances: any[],
+        policyStances: Stance[],
         ministriesOffered: Record<PartyId, number>
     }
 ): ActionResult => {
@@ -110,14 +110,28 @@ export const formGovernment = (
         }
     });
 
+    // Mock Prime Minister for now (needs to be a full Politician object)
+    // We'll just pick the first minister as PM for now, or create a dummy one if empty
+    const primeMinister: Politician = ministers.length > 0 ? ministers[0] : {
+        id: 'mock-pm',
+        name: 'Mock PM',
+        partyId: 'player', // Default
+        constituency: 'antwerp', // Default
+        language: 'dutch',
+        listPosition: 1,
+        popularity: 50,
+        expertise: [],
+        traits: []
+    };
+
     const proposal = {
         partners: proposalPayload.partners,
         ministers: ministers,
-        primeMinister: { language: 'dutch' } // Placeholder, needs UI selection
+        primeMinister: primeMinister
     };
 
     // Validate using the shared validation logic
-    const validation = validateGovernment(proposal as any, state);
+    const validation = validateGovernment(proposal, state);
 
     if (validation.isValid) {
         const total = proposal.partners.reduce((sum, id) => sum + state.parties[id].totalSeats, 0);
@@ -129,12 +143,14 @@ export const formGovernment = (
                 gamePhase: 'governing',
                 government: {
                     partners: proposalPayload.partners,
-                    primeMinister: null, // To be implemented
+                    primeMinister: primeMinister, // To be implemented
                     ministers: ministers,
-                    agreement: proposalPayload.policyStances,
+                    agreement: {
+                        policyCompromises: proposalPayload.policyStances,
+                        ministerialDistribution: proposalPayload.ministriesOffered
+                    },
                     stability: 100 // Start with high stability
                 },
-                nationalBudget: 10000, // Initial national budget
                 eventLog: [...state.eventLog, message]
             },
             success: true,

@@ -1,75 +1,54 @@
-import { CONSTITUENCIES } from "../constants";
-import { EVENTS } from "../events";
-/**
- * Game Loop and Action Handlers
- *
- * This file contains the core game loop logic and all player action handlers.
- *
- * Key responsibilities:
- * - Processing player actions (canvas, rally, posters, fundraise, TV ads, debates)
- * - Turn advancement and resource regeneration
- * - AI opponent moves
- * - Random event generation
- * - Polling changes based on actions
- */
-
-import type { GameState, ConstituencyId, PartyId, ActionResult } from '../types';
+import type { GameState, ActionResult, ConstituencyId, PartyId, RegionId, Politician } from '../types';
+import { CONSTITUENCIES } from '../constants';
+import { EVENTS } from '../events';
+import { determineInformateur } from './consultation';
+import { calculateBudgetImpact, generateCrisis, checkGovernmentStability } from './governing';
 import type { ActionType } from '../actions';
 
-// ============================================================================
-// ACTION RESULT TYPE
-// ============================================================================
+export const applyPollingChange = (state: GameState, constituencyId: ConstituencyId, partyId: PartyId, change: number): GameState => {
+    const newState = JSON.parse(JSON.stringify(state)); // Deep copy
 
-// --- Pure Helper Functions for Polling Changes ---
-
-const applyPollingChange = (state: GameState, constituencyId: ConstituencyId, partyId: PartyId, change: number): GameState => {
-    const newState = JSON.parse(JSON.stringify(state)); // Deep copy for safety
-
-    if (!newState.parties[partyId].eligibleConstituencies.includes(constituencyId)) {
-        return state; // Return original state if action is not applicable
+    if (!newState.polling) {
+        newState.polling = {};
     }
 
-    newState.parties[partyId].constituencyPolling[constituencyId] += change;
-
-    const eligiblePartyIds = (Object.keys(newState.parties) as PartyId[]).filter(id => newState.parties[id].eligibleConstituencies.includes(constituencyId));
-
-    if (change > 0) {
-        const othersIds = eligiblePartyIds.filter(k => k !== partyId);
-        if (othersIds.length > 0) {
-            const reductionPerParty = change / othersIds.length;
-            othersIds.forEach(id => {
-                newState.parties[id].constituencyPolling[constituencyId] = Math.max(0, newState.parties[id].constituencyPolling[constituencyId] - reductionPerParty);
-            });
-        }
-    } else {
-        const othersIds = eligiblePartyIds.filter(k => k !== partyId);
-        if (othersIds.length > 0) {
-            const gainPerParty = Math.abs(change) / othersIds.length;
-            othersIds.forEach(id => {
-                newState.parties[id].constituencyPolling[constituencyId] += gainPerParty;
-            });
-        }
+    if (!newState.polling[constituencyId]) {
+        newState.polling[constituencyId] = {};
     }
+    const pollingData = newState.polling[constituencyId];
 
-    // Normalize polling to 100%
-    const totalPolling = eligiblePartyIds.reduce((sum, id) => sum + newState.parties[id].constituencyPolling[constituencyId], 0);
-    if (totalPolling > 0) {
-        eligiblePartyIds.forEach(id => {
-            newState.parties[id].constituencyPolling[constituencyId] = (newState.parties[id].constituencyPolling[constituencyId] / totalPolling) * 100;
+    const current = pollingData[partyId] || 0;
+    let newval = current + change;
+    newval = Math.max(0, Math.min(100, newval)); // Clamp 0-100
+
+    // Normalize? For now, just clamp. In a real sim, we'd normalize total to 100%.
+    // Simple normalization:
+    const otherPartiesTotal = Object.entries(pollingData)
+        .filter(([pid]) => pid !== partyId)
+        .reduce((sum, [, val]) => sum + (val as number), 0);
+
+    // If we just add to one, total > 100. We should steal from others proportionally?
+    // For MVP, let's just update and allow > 100 temporarily or normalize all.
+    // Let's normalize all to 100.
+
+    pollingData[partyId] = newval;
+    const newTotal = otherPartiesTotal + newval;
+
+    if (newTotal > 0) {
+        Object.keys(pollingData).forEach(pid => {
+            pollingData[pid] = (pollingData[pid] / newTotal) * 100;
         });
     }
 
     return newState;
-}
-
-// --- Action Implementations ---
+};
 
 export const performCanvas = (state: GameState): ActionResult => {
-    const cost = 0;
+    const cost = 500;
     const energyCost = 2;
     const popularityGain = 1.5;
     const cName = CONSTITUENCIES[state.selectedConstituency].name;
-    const logMsg = `Canvassing in ${cName} secured voters.`;
+    const logMsg = `Canvassing in ${cName} was successful.`;
 
     if (state.budget < cost || state.energy < energyCost) return { newState: state, success: false, message: "Not enough resources." };
 
@@ -95,17 +74,33 @@ export const performRally = (state: GameState): ActionResult => {
 
     let popularityGain: number;
     let logMsg: string;
+    let popularityChange = 0;
 
     if (isGaffe) {
         popularityGain = -3.0;
         logMsg = `GAFFE! The rally in ${cName} was a disaster despite ${leadCandidate?.name}'s efforts.`;
+        popularityChange = -5;
     } else {
         const baseGain = 5.0;
         popularityGain = baseGain * charismaMod;
         logMsg = `Huge rally in ${cName}! ${leadCandidate?.name} (Cha: ${leadCandidate?.charisma}) electrified the crowd.`;
+        popularityChange = 5;
     }
 
     let newState = applyPollingChange(state, state.selectedConstituency, 'player', popularityGain);
+
+    // Update the politician in the new state
+    if (leadCandidate) {
+        const politicians = newState.parties['player'].politicians[state.selectedConstituency];
+        const index = politicians.findIndex((p: Politician) => p.id === leadCandidate.id);
+        if (index !== -1) {
+            politicians[index] = {
+                ...politicians[index],
+                popularity: Math.max(0, Math.min(100, politicians[index].popularity + popularityChange))
+            };
+        }
+    }
+
     newState.budget -= cost;
     newState.energy -= energyCost;
     newState.eventLog = [...newState.eventLog, `Week ${newState.turn}: ${logMsg}`];
@@ -149,15 +144,17 @@ export const performFundraise = (state: GameState): ActionResult => {
 }
 
 
-const applyNationalPollingChange = (state: GameState, partyId: PartyId, change: number): GameState => {
+const applyRegionalPollingChange = (state: GameState, region: RegionId, partyId: PartyId, change: number): GameState => {
     let newState = JSON.parse(JSON.stringify(state)); // Deep copy for safety
 
     const constituencyIds = Object.keys(CONSTITUENCIES) as ConstituencyId[];
 
     constituencyIds.forEach(cId => {
-        // Create a temporary state for each constituency to apply the change
-        const tempStateForConstituency = { ...newState, selectedConstituency: cId };
-        newState = applyPollingChange(tempStateForConstituency, cId, partyId, change);
+        if (CONSTITUENCIES[cId].region === region) {
+            // Create a temporary state for each constituency to apply the change
+            const tempStateForConstituency = { ...newState, selectedConstituency: cId };
+            newState = applyPollingChange(tempStateForConstituency, cId, partyId, change);
+        }
     });
 
     return newState;
@@ -166,12 +163,14 @@ const applyNationalPollingChange = (state: GameState, partyId: PartyId, change: 
 export const performTvAd = (state: GameState): ActionResult => {
     const cost = 3000;
     const energyCost = 0;
-    const popularityGain = 0.5; // Small national boost
-    const logMsg = `National TV Ad Campaign aired!`;
+    const popularityGain = 0.5; // Regional boost
+    const region = CONSTITUENCIES[state.selectedConstituency].region;
+    const regionName = region === 'flanders' ? 'Flanders' : region === 'wallonia' ? 'Wallonia' : 'Brussels';
+    const logMsg = `TV Ad Campaign aired in ${regionName}!`;
 
     if (state.budget < cost || state.energy < energyCost) return { newState: state, success: false, message: "Not enough resources." };
 
-    let newState = applyNationalPollingChange(state, 'player', popularityGain);
+    let newState = applyRegionalPollingChange(state, region, 'player', popularityGain);
     newState.budget -= cost;
     newState.energy -= energyCost;
     newState.eventLog = [...newState.eventLog, `Week ${newState.turn}: ${logMsg}`];
@@ -188,7 +187,7 @@ export const performDebate = (state: GameState): ActionResult => {
     let totalExpertise = 0;
     let candidateCount = 0;
     Object.values(state.parties['player'].politicians).forEach(list => {
-        list.forEach((c: any) => {
+        list.forEach((c: Politician) => {
             totalExpertise += c.expertise;
             candidateCount++;
         });
@@ -212,7 +211,8 @@ export const performDebate = (state: GameState): ActionResult => {
         logMsg = "Solid debate performance.";
     }
 
-    let newState = applyNationalPollingChange(state, 'player', gain);
+    const region = CONSTITUENCIES[state.selectedConstituency].region;
+    let newState = applyRegionalPollingChange(state, region, 'player', gain);
     newState.budget -= cost;
     newState.energy -= energyCost;
     newState.eventLog = [...newState.eventLog, `Week ${newState.turn}: ${logMsg}`];
@@ -222,6 +222,61 @@ export const performDebate = (state: GameState): ActionResult => {
 
 
 // --- Main Action Dispatcher ---
+
+export const performMeetTheKing = (state: GameState): ActionResult => {
+    const informateur = determineInformateur(state);
+    const isPlayer = informateur === state.playerPartyId;
+    const informateurName = state.parties[informateur].name;
+
+    const message = isPlayer
+        ? `The King has appointed YOU as Informateur! Form a government.`
+        : `The King has appointed ${informateurName} as Informateur.`;
+
+    const newState = {
+        ...state,
+        informateur,
+        gamePhase: 'formation' as const, // Transition to formation
+        eventLog: [...state.eventLog, message]
+    };
+
+    return { newState, success: true, message };
+};
+
+
+
+export const performReorderList = (state: GameState, payload: { constituencyId: ConstituencyId, politicianId: string, newIndex: number }): ActionResult => {
+    const { constituencyId, politicianId, newIndex } = payload;
+    const newState = JSON.parse(JSON.stringify(state));
+    const politicians = newState.parties['player'].politicians[constituencyId];
+
+    if (!politicians) return { newState: state, success: false, message: "Constituency not found." };
+
+    const currentIndex = politicians.findIndex((p: Politician) => p.id === politicianId);
+    if (currentIndex === -1) return { newState: state, success: false, message: "Politician not found." };
+
+    // Swap logic for adjacent moves (Up/Down arrows)
+    // If we want to support drag-and-drop later, we'd need array move logic.
+    // For now, assume newIndex is valid and adjacent.
+
+    const targetIndex = newIndex; // 0-based from UI
+    // listPosition is 1-based in data model? Yes, initialized as i+1.
+    // But let's check if we rely on listPosition property or just array order.
+    // The UI sorts by listPosition.
+
+    const targetPolitician = politicians.find((p: Politician) => p.listPosition === targetIndex + 1);
+    const currentPolitician = politicians[currentIndex];
+
+    if (targetPolitician) {
+        // Swap listPositions
+        const temp = currentPolitician.listPosition;
+        currentPolitician.listPosition = targetPolitician.listPosition;
+        targetPolitician.listPosition = temp;
+
+        return { newState, success: true, message: "List reordered." };
+    }
+
+    return { newState: state, success: false, message: "Invalid move." };
+};
 
 export const handleAction = (state: GameState, actionType: ActionType): ActionResult => {
     switch (actionType) {
@@ -300,6 +355,25 @@ export const endTurn = (state: GameState): GameState => {
     newState.turn += 1;
     newState.energy = newState.maxEnergy;
 
+    // 4. Governing Phase Logic
+    if (newState.gamePhase === 'governing') {
+        // Update National Budget
+        newState.nationalBudget = calculateBudgetImpact(newState);
+
+        // Check for Crises
+        newState = generateCrisis(newState);
+
+        // Check Stability
+        const check = checkGovernmentStability(newState);
+        if (check.collapsed) {
+            newState.eventLog = [...newState.eventLog, `GOVERNMENT COLLAPSED: ${check.reason}`];
+            // In a full game, this would trigger new elections or consultation.
+            // For now, we just log it.
+            if (newState.government) {
+                newState.government.stability = 0;
+            }
+        }
+    }
+
     return newState;
 };
-

@@ -2,9 +2,10 @@ import { Megaphone, TrendingUp, Users, Vote } from 'lucide-react';
 
 interface ActionGridProps {
     onAction: (action: 'canvas' | 'posters' | 'rally' | 'fundraise' | 'tv_ad' | 'debate') => void;
+    regionName: string;
 }
 
-export const ActionGrid = ({ onAction }: ActionGridProps) => {
+export const ActionGrid = ({ onAction, regionName }: ActionGridProps) => {
     return (
         <div className="space-y-6">
             <div>
@@ -69,8 +70,8 @@ export const ActionGrid = ({ onAction }: ActionGridProps) => {
                             </div>
                             <span className="text-xs font-bold text-red-400 bg-red-400/10 px-2 py-1 rounded">-€3000</span>
                         </div>
-                        <div className="font-bold text-indigo-100">TV Ad Campaign</div>
-                        <div className="text-xs text-indigo-300/70 mt-1">Boosts polling in ALL regions.</div>
+                        <div className="font-bold text-indigo-100">TV Ad ({regionName})</div>
+                        <div className="text-xs text-indigo-300/70 mt-1">Boosts polling in {regionName}.</div>
                     </button>
 
                     <button onClick={() => onAction('debate')} className="bg-indigo-900/20 p-4 rounded-xl border border-indigo-500/30 hover:border-indigo-500 hover:bg-indigo-900/40 text-left transition-all group">
