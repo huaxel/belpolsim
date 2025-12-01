@@ -64,6 +64,8 @@ export interface Politician {
     charisma: number; // 1-10, affects rally effectiveness
     expertise: number; // 1-10, affects debate performance
     internalClout: number; // 0-100, determines list position
+    listPosition: number; // Current position on the electoral list (1-based)
+    originalListPosition: number; // Initial position (for reference)
     popularity: number; // 0-100, used for preference votes
     ministerialRole: string | null; // Position in government if appointed
 }
@@ -153,14 +155,15 @@ export interface GameEvent {
 /**
  * Represents the current phase of the game
  * 
- * Flow: campaign → election → coalition_formation → governing
+ * Flow: campaign → election → consultation → formation → governing
  * 
  * - campaign: Player campaigns for 10 turns
  * - election: Automatic calculation of election results
- * - coalition_formation: Player negotiates with other parties
+ * - consultation: King consults parties, appoints Informateur
+ * - formation: Informateur/Formateur negotiates coalition
  * - governing: Player manages the government
  */
-export type GamePhase = 'campaign' | 'election' | 'coalition_formation' | 'governing';
+export type GamePhase = 'campaign' | 'election' | 'consultation' | 'formation' | 'governing';
 
 // ============================================================================
 // PARLIAMENT & GOVERNMENT
@@ -187,8 +190,49 @@ export interface Government {
     partners: PartyId[];
     primeMinister: Politician | null;
     ministers: Politician[];
-    agreement: Stance[];
+    agreement: CoalitionAgreement; // Replaces simple Stance[]
     stability: number; // 0-100
+}
+
+export interface CoalitionAgreement {
+    policyCompromises: Stance[]; // The agreed-upon policies
+    ministerialDistribution: Record<PartyId, number>; // How many ministers each party gets
+}
+
+// --- Game State & Engine ---
+
+// ============================================================================
+// GOVERNING PHASE STRUCTURES
+// ============================================================================
+
+export interface NationalBudget {
+    revenue: number; // Total income (taxes, etc.)
+    expenses: number; // Total spending
+    debt: number; // National debt
+    deficit: number; // revenue - expenses
+    lastYearGrowth: number; // GDP growth %
+}
+
+export interface Crisis {
+    id: string;
+    title: string;
+    description: string;
+    severity: 'low' | 'medium' | 'high' | 'critical';
+    choices: EventChoice[]; // Reusing EventChoice structure
+    active: boolean;
+    turnsRemaining: number;
+}
+
+export interface Law {
+    id: string;
+    name: string;
+    description: string;
+    effects: {
+        budgetImpact: number; // Change in expenses/revenue
+        popularityImpact: number; // Change in public approval
+        stabilityImpact: number; // Change in government stability
+    };
+    status: 'proposed' | 'passed' | 'rejected';
 }
 
 // --- Game State & Engine ---
@@ -197,7 +241,7 @@ export interface GameState {
     turn: number; // Renamed from week
     maxTurns: number; // Renamed from maxWeeks
     gamePhase: GamePhase; // Replaces boolean flags
-    budget: number;
+    budget: number; // Campaign budget
     energy: number;
     maxEnergy: number;
 
@@ -212,7 +256,14 @@ export interface GameState {
 
     parliament: Parliament; // Added
     government: Government | null;
-    nationalBudget: number; // Distinct from campaign budget
+    informateur: PartyId | null; // New field
+    formateur: PartyId | null; // New field
+
+    // Governing Phase State
+    nationalBudget: NationalBudget; // Replaced number with object
+    crises: Crisis[];
+    laws: Law[];
+    publicApproval: number; // 0-100
 
     eventLog: string[];
     currentEvent: GameEvent | null;
