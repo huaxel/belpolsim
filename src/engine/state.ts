@@ -22,6 +22,7 @@ import type {
     Issue,
     IssueId,
     Language,
+    CampaignStats, // Campaign v2
 } from '../types';
 
 // ============================================================================
@@ -103,11 +104,26 @@ const initParty = (
     const polling: Record<string, number> = {};
     const seats: Record<string, number> = {};
     const politicians: Record<string, Politician[]> = {};
+    const campaignStats: Record<string, { awareness: number; favorability: number; enthusiasm: number }> = {};
 
     constituencyIds.forEach(c => {
-        polling[c] = eligibleC.includes(c) ? basePolling : 0;
+        const isEligible = eligibleC.includes(c);
+        polling[c] = isEligible ? basePolling : 0;
         seats[c] = 0;
-        if (eligibleC.includes(c)) {
+
+        // Campaign v2: Initialize three-stat system
+        if (isEligible) {
+            // Start with moderate awareness, favorability based on polling, low enthusiasm
+            campaignStats[c] = {
+                awareness: basePolling * 0.8,      // Slightly lower than polling
+                favorability: basePolling,          // Matches base polling
+                enthusiasm: basePolling * 0.6       // Lower - needs to be built
+            };
+        } else {
+            campaignStats[c] = { awareness: 0, favorability: 0, enthusiasm: 0 };
+        }
+
+        if (isEligible) {
             // For Brussels, assume mixed politicians for now. This is a simplification.
             const politicianLang = c === 'brussels_capital' ? (Math.random() > 0.5 ? 'dutch' : 'french') : language;
             politicians[c] = generatePoliticians(id, c, CONSTITUENCIES[c].seats, politicianLang);
@@ -119,13 +135,17 @@ const initParty = (
     return {
         id, name, color, isExtremist, stances, ideology,
         eligibleConstituencies: eligibleC,
+        campaignStats: campaignStats as Record<ConstituencyId, CampaignStats>,
         constituencyPolling: polling as Record<ConstituencyId, number>,
         constituencySeats: seats as Record<ConstituencyId, number>,
         totalSeats: 0,
         politicians: politicians as Record<ConstituencyId, Politician[]>,
-        negotiationThreshold
+        negotiationThreshold,
+        ministries: 0,           // Campaign v2: No ministries at start
+        supportBase: basePolling // Campaign v2: Core voter loyalty
     };
 };
+
 
 // ============================================================================
 // INITIAL STATE CREATION

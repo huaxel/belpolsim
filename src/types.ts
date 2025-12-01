@@ -26,6 +26,57 @@ export type Language = 'dutch' | 'french' | 'german';
 export type CompetencyLevel = 'Federal' | 'Regional' | 'Community';
 export type IssueId = 'taxation' | 'immigration' | 'environment' | 'security' | 'social_welfare' | 'state_reform' | 'nuclear_exit' | 'wealth_tax' | 'regional_autonomy' | 'strict_immigration' | 'public_transport' | 'retirement_67';
 
+// ============================================================================
+// CAMPAIGN V2: DEMOGRAPHICS & VOTER BEHAVIOR
+// ============================================================================
+
+/**
+ * Demographic groups within constituencies
+ * Each group has different media consumption and issue preferences
+ */
+export type DemographicGroup = 'youth' | 'retirees' | 'workers' | 'upper_class';
+
+/**
+ * Demographic composition of a constituency
+ * Weights must sum to 1.0 (representing 100% of population)
+ */
+export interface DemographicWeights {
+    youth: number;        // 18-35 years old
+    retirees: number;     // 65+ years old
+    workers: number;      // Blue collar workers
+    upper_class: number;  // High income earners
+}
+
+/**
+ * Three-stat campaign model (replaces simple polling)
+ * 
+ * Awareness: Do voters know who you are? (0-100%)
+ * Favorability: Do they like your platform? (0-100%)
+ * Enthusiasm: Will they actually vote for you? (0-100%)
+ * 
+ * Final polling = weighted combination of these three stats
+ */
+export interface CampaignStats {
+    awareness: number;      // Name recognition (easier to increase)
+    favorability: number;   // Platform appeal (harder to move)
+    enthusiasm: number;     // Voter motivation (volatile)
+}
+
+/**
+ * Voter profile defining preferences and media consumption
+ * Used to calculate campaign action effectiveness
+ */
+export interface VoterProfile {
+    demographic: DemographicGroup;
+    preferredIssues: IssueId[];  // Issues this group cares about most
+    mediaConsumption: {
+        tv: number;           // 0-1: TV watching frequency
+        social_media: number; // 0-1: Social media usage
+        newspaper: number;    // 0-1: Newspaper reading
+        radio: number;        // 0-1: Radio listening
+    };
+}
+
 
 // ============================================================================
 // GEOGRAPHIC & ELECTORAL STRUCTURES
@@ -40,6 +91,7 @@ export interface Constituency {
     name: string;
     region: RegionId;
     seats: number; // Number of parliamentary seats allocated to this constituency
+    demographics: DemographicWeights; // Campaign v2: Population breakdown
 }
 
 // ============================================================================
@@ -96,11 +148,19 @@ export interface Party {
     ideology: { economic: number; social: number }; // -10 to +10 scale
     stances: Stance[]; // Party positions on issues
     eligibleConstituencies: ConstituencyId[]; // Where party can run
+
+    // Campaign v2: Three-stat system per constituency
+    campaignStats: Record<ConstituencyId, CampaignStats>; // Awareness/Favorability/Enthusiasm
+
+    // Backward compatibility: Calculated from campaignStats
     constituencyPolling: Record<ConstituencyId, number>; // Current polling %
+
     constituencySeats: Record<ConstituencyId, number>; // Seats won per constituency
     totalSeats: number; // Total seats in parliament
     politicians: Record<ConstituencyId, Politician[]>; // All politicians by constituency
     negotiationThreshold: number; // 0-100, higher = more willing to compromise
+    ministries: number; // Number of ministries held (governing phase)
+    supportBase: number; // Core voter loyalty (0-100)
 }
 
 // ============================================================================
