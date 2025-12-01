@@ -43,7 +43,7 @@ import type {
  * @param language - Language of the politician (Dutch or French)
  * @returns Array of generated politicians
  */
-const generatePoliticians = (partyId: PartyId, constituencyId: ConstituencyId, count: number, language: Language): Politician[] => {
+export const generatePoliticians = (partyId: PartyId, constituencyId: ConstituencyId, count: number, language: Language): Politician[] => {
     return Array.from({ length: count }).map((_, i) => ({
         id: `${partyId}-${constituencyId}-${i}`,
         name: `${partyId.toUpperCase()} Politician ${i + 1}`,
