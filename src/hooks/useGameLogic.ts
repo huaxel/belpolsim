@@ -73,6 +73,18 @@ const gameReducer = (state: GameState, action: Action): GameState => {
             const result = voteOnLegislation(state, action.payload.law);
             return result.newState;
         }
+        case 'UPDATE_AUTO_CAMPAIGN': {
+            return {
+                ...state,
+                parties: {
+                    ...state.parties,
+                    player: {
+                        ...state.parties.player,
+                        autoCampaign: action.payload.settings
+                    }
+                }
+            };
+        }
         default:
             return state;
     }
@@ -99,6 +111,10 @@ export const useGameLogic = () => {
 
     const toggleCoalitionPartner = useCallback((partnerId: PartyId) => {
         dispatch({ type: 'TOGGLE_COALITION_PARTNER', payload: { partnerId } });
+    }, [dispatch]);
+
+    const updateAutoCampaign = useCallback((settings: import('../types').AutoCampaignStrategy) => {
+        dispatch({ type: 'UPDATE_AUTO_CAMPAIGN', payload: { settings } });
     }, [dispatch]);
 
     const formGovernment = useCallback((proposal: { partners: PartyId[], policyStances: Stance[], ministriesOffered: Record<PartyId, number> }) => {
@@ -143,5 +159,6 @@ export const useGameLogic = () => {
         reorderList,
         resolveCrisis: resolveCrisisHandler,
         voteOnLegislation: voteOnLegislationHandler,
+        updateAutoCampaign
     };
 };

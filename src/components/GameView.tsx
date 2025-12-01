@@ -36,7 +36,8 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
         formGovernment,
         reorderList,
         resolveCrisis,
-        voteOnLegislation
+        voteOnLegislation,
+        updateAutoCampaign
     } = useGameLogic();
 
     const [activeView, setActiveView] = useState('dashboard');
@@ -62,6 +63,7 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
                                         handleAction(actionType, targetDemographic);
                                     }}
                                     onSelectConstituency={setSelectedConstituency}
+                                    onUpdateAutoCampaign={updateAutoCampaign}
                                 />
                             )}
                             {gameState.gamePhase === 'governing' && (

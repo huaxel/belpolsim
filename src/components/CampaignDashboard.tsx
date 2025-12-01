@@ -16,22 +16,28 @@ import { calculateCampaignEffect } from '../engine/campaignLogic';
 import { CONSTITUENCIES } from '../constants';
 
 import { CampaignRecommendations } from './CampaignRecommendations';
+import { AutoCampaignSettings } from './AutoCampaignSettings';
+import { Settings } from 'lucide-react';
+import type { AutoCampaignStrategy } from '../types';
 
 interface CampaignDashboardProps {
     gameState: GameState;
     selectedConstituency: ConstituencyId;
     onPerformAction: (actionType: CampaignActionType, targetDemographic?: DemographicGroup) => void;
     onSelectConstituency: (id: ConstituencyId) => void;
+    onUpdateAutoCampaign: (settings: AutoCampaignStrategy) => void;
 }
 
 export const CampaignDashboard = ({
     gameState,
     selectedConstituency,
     onPerformAction,
-    onSelectConstituency
+    onSelectConstituency,
+    onUpdateAutoCampaign
 }: CampaignDashboardProps) => {
     const [actionType, setActionType] = useState<CampaignActionType>('social_media');
     const [targetDemographic, setTargetDemographic] = useState<DemographicGroup | 'all'>('all');
+    const [showSettings, setShowSettings] = useState(false);
 
     const constituency = CONSTITUENCIES[selectedConstituency];
     const currentStats = gameState.parties.player.campaignStats[selectedConstituency];
@@ -123,11 +129,28 @@ export const CampaignDashboard = ({
                             {constituency.name} • {constituency.seats} seats
                         </p>
                     </div>
-                    <div className="text-right">
-                        <div className="text-slate-400 text-sm">Budget</div>
-                        <div className="text-2xl font-bold text-green-400">€{gameState.budget.toLocaleString()}</div>
+                    <div className="text-right flex items-center space-x-4">
+                        <button
+                            onClick={() => setShowSettings(true)}
+                            className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-colors"
+                            title="Auto-Campaign Settings"
+                        >
+                            <Settings size={24} />
+                        </button>
+                        <div>
+                            <div className="text-slate-400 text-sm">Budget</div>
+                            <div className="text-2xl font-bold text-green-400">€{gameState.budget.toLocaleString()}</div>
+                        </div>
                     </div>
                 </div>
+
+                {showSettings && gameState.parties.player.autoCampaign && (
+                    <AutoCampaignSettings
+                        strategy={gameState.parties.player.autoCampaign}
+                        onUpdate={onUpdateAutoCampaign}
+                        onClose={() => setShowSettings(false)}
+                    />
+                )}
 
                 <div className="grid grid-cols-3 gap-6">
                     {/* Left: Demographics Overview */}

@@ -142,7 +142,21 @@ const initParty = (
         politicians: politicians as Record<ConstituencyId, Politician[]>,
         negotiationThreshold,
         ministries: 0,           // Campaign v2: No ministries at start
-        supportBase: basePolling // Campaign v2: Core voter loyalty
+        supportBase: basePolling, // Campaign v2: Core voter loyalty
+        autoCampaign: {
+            isEnabled: false,
+            budgetLimit: 5000,
+            priorities: {
+                critical: true,
+                competitive: true,
+                safe: false
+            },
+            regions: {
+                flanders: true,
+                wallonia: true,
+                brussels: true
+            }
+        }
     };
 };
 

@@ -4,7 +4,7 @@ import { EVENTS } from '../events';
 import { determineInformateur } from './consultation';
 import { calculateBudgetImpact, generateCrisis, checkGovernmentStability } from './governing';
 import { getRandomCampaignEvent } from './campaignEvents';
-import { calculateCampaignEffect, calculatePollingFromStats, type CampaignActionType } from './campaignLogic';
+import { calculateCampaignEffect, calculatePollingFromStats, generateRecommendations, type CampaignActionType } from './campaignLogic';
 import type { ActionType } from '../actions';
 
 export const applyPollingChange = (state: GameState, constituencyId: ConstituencyId, partyId: PartyId, change: number): GameState => {
@@ -668,12 +668,96 @@ const checkForRandomEvent = (state: GameState): GameState => {
 };
 
 
+/**
+ * Execute Auto-Campaign Strategy
+ * Runs at end of turn using remaining resources
+ */
+const executeAutoCampaign = (state: GameState): GameState => {
+    const autoStrategy = state.parties.player.autoCampaign;
+    if (!autoStrategy || !autoStrategy.isEnabled || state.gamePhase !== 'campaign') return state;
+
+    let newState = JSON.parse(JSON.stringify(state));
+    let spentBudget = 0;
+
+    // Get recommendations based on current state
+    const recommendations = generateRecommendations(newState);
+
+    // Filter by region and priority
+    const actionableRecs = recommendations.filter(rec => {
+        const constituency = CONSTITUENCIES[rec.constituencyId];
+        const regionEnabled = autoStrategy.regions[constituency.region];
+        const priorityEnabled = autoStrategy.priorities[rec.priority];
+        return regionEnabled && priorityEnabled;
+    });
+
+    // Execute actions
+    let actionsPerformed = 0;
+
+    for (const rec of actionableRecs) {
+        // Check global limits
+        if (spentBudget >= autoStrategy.budgetLimit) break;
+        if (newState.energy < 1) break; // Minimum energy needed for any action
+
+        // Determine action cost
+        const costs: Record<string, number> = {
+            social_media: 1000,
+            newspaper: 2000,
+            radio: 1500,
+            door_to_door: 0
+        };
+        const cost = costs[rec.recommendedAction] || 1000;
+
+        // Check specific limits
+        if (spentBudget + cost > autoStrategy.budgetLimit) continue;
+        if (newState.budget < cost) break;
+
+        // Set context for the action
+        newState.selectedConstituency = rec.constituencyId;
+
+        // Execute action
+        let result: ActionResult = { newState, success: false, message: '' };
+
+        switch (rec.recommendedAction) {
+            case 'social_media':
+                result = performSocialMedia(newState, rec.recommendedDemographic);
+                break;
+            case 'newspaper':
+                result = performNewspaper(newState, rec.recommendedDemographic);
+                break;
+            case 'radio':
+                result = performRadio(newState, rec.recommendedDemographic);
+                break;
+            case 'door_to_door':
+                result = performDoorToDoor(newState, rec.recommendedDemographic);
+                break;
+        }
+
+        if (result.success) {
+            newState = result.newState;
+            spentBudget += cost;
+            actionsPerformed++;
+        }
+    }
+
+    if (actionsPerformed > 0) {
+        newState.eventLog = [...newState.eventLog, `🤖 Auto-Campaign executed ${actionsPerformed} actions (Cost: €${spentBudget})`];
+    }
+
+    // Restore original selection
+    newState.selectedConstituency = state.selectedConstituency;
+
+    return newState;
+};
+
 export const endTurn = (state: GameState): GameState => {
     if (state.turn >= state.maxTurns) {
         return state;
     }
 
     let newState = { ...state };
+
+    // 0. Execute Auto-Campaign (uses remaining resources)
+    newState = executeAutoCampaign(newState);
 
     // 1. Perform AI moves
     newState = performAiMoves(newState);

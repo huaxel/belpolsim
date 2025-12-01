@@ -151,6 +151,7 @@ export interface Party {
 
     // Campaign v2: Three-stat system per constituency
     campaignStats: Record<ConstituencyId, CampaignStats>; // Awareness/Favorability/Enthusiasm
+    autoCampaign?: AutoCampaignStrategy;
 
     // Backward compatibility: Calculated from campaignStats
     constituencyPolling: Record<ConstituencyId, number>; // Current polling %
@@ -161,6 +162,21 @@ export interface Party {
     negotiationThreshold: number; // 0-100, higher = more willing to compromise
     ministries: number; // Number of ministries held (governing phase)
     supportBase: number; // Core voter loyalty (0-100)
+}
+
+export interface AutoCampaignStrategy {
+    isEnabled: boolean;
+    budgetLimit: number; // Max budget per turn
+    priorities: {
+        critical: boolean;   // Target <3% margin
+        competitive: boolean; // Target <7% margin
+        safe: boolean;       // Target safe seats (maintenance)
+    };
+    regions: {
+        flanders: boolean;
+        wallonia: boolean;
+        brussels: boolean;
+    };
 }
 
 // ============================================================================
