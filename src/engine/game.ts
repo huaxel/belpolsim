@@ -390,7 +390,7 @@ export const performReorderList = (state: GameState, payload: { constituencyId: 
     return { newState: state, success: false, message: "Invalid move." };
 };
 
-export const handleAction = (state: GameState, actionType: ActionType): ActionResult => {
+export const handleAction = (state: GameState, actionType: ActionType, targetDemographic?: import('../types').DemographicGroup): ActionResult => {
     switch (actionType) {
         case 'canvas':
             return performCanvas(state);
@@ -411,6 +411,15 @@ export const handleAction = (state: GameState, actionType: ActionType): ActionRe
             return performEmergencyRally(state);
         case 'policy_announcement':
             return performPolicyAnnouncement(state);
+        // Campaign v2: Targeted actions
+        case 'social_media':
+            return { newState: state, success: false, message: "Social media campaigns coming soon!" };
+        case 'newspaper':
+            return { newState: state, success: false, message: "Newspaper ads coming soon!" };
+        case 'radio':
+            return { newState: state, success: false, message: "Radio ads coming soon!" };
+        case 'door_to_door':
+            return { newState: state, success: false, message: "Door-to-door campaigns coming soon!" };
         default:
             return { newState: state, success: false, message: `Action '${actionType}' is not implemented.` };
     }

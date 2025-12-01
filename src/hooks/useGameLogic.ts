@@ -18,7 +18,7 @@ import { resolveCrisis, voteOnLegislation } from '../engine/governing';
 const gameReducer = (state: GameState, action: Action): GameState => {
     switch (action.type) {
         case 'PERFORM_ACTION': {
-            const result = handleAction(state, action.payload.actionType);
+            const result = handleAction(state, action.payload.actionType, action.payload.targetDemographic);
             return result.newState;
         }
         case 'END_TURN': {
@@ -81,8 +81,8 @@ const gameReducer = (state: GameState, action: Action): GameState => {
 export const useGameLogic = () => {
     const [gameState, dispatch] = useReducer(gameReducer, undefined, createInitialState);
 
-    const handleAction = useCallback((actionType: ActionType) => {
-        dispatch({ type: 'PERFORM_ACTION', payload: { actionType } });
+    const handleAction = useCallback((actionType: ActionType, targetDemographic?: import('../types').DemographicGroup) => {
+        dispatch({ type: 'PERFORM_ACTION', payload: { actionType, targetDemographic } });
     }, [dispatch]);
 
     const endTurn = useCallback(() => {

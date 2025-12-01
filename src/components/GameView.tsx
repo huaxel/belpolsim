@@ -4,7 +4,7 @@ import { useGameLogic } from '../hooks/useGameLogic';
 import { Layout } from './Layout';
 import { BelgiumMap } from './BelgiumMap';
 import { PollingDashboard } from './PollingDashboard';
-import { ActionGrid } from './ActionGrid';
+import { CampaignDashboard } from './CampaignDashboard';
 import { CoalitionInterface } from './CoalitionInterface';
 import { KingsPalace } from './KingsPalace';
 import { EventLog } from './EventLog';
@@ -57,7 +57,13 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in duration-500">
                         <div className="lg:col-span-2 space-y-6">
                             {gameState.gamePhase === 'campaign' && (
-                                <ActionGrid onAction={handleAction} regionName={regionName} />
+                                <CampaignDashboard
+                                    gameState={gameState}
+                                    selectedConstituency={gameState.selectedConstituency}
+                                    onPerformAction={(actionType, targetDemographic) => {
+                                        handleAction(actionType, targetDemographic);
+                                    }}
+                                />
                             )}
                             {gameState.gamePhase === 'governing' && (
                                 <GovernmentDashboard gameState={gameState} />
