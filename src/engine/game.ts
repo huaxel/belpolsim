@@ -1,4 +1,4 @@
-import type { GameState, ActionResult, ConstituencyId, PartyId, RegionId, Politician } from '../types';
+import type { GameState, ActionResult, ConstituencyId, PartyId, RegionId, Politician, IssueId } from '../types';
 import { CONSTITUENCIES } from '../constants';
 import { EVENTS } from '../events';
 import { determineInformateur } from './consultation';
@@ -221,6 +221,117 @@ export const performDebate = (state: GameState): ActionResult => {
     return { newState, success: true, message: logMsg };
 }
 
+// ============================================================================
+// PHASE 2: STRATEGIC ACTIONS WITH RISK/REWARD TRADEOFFS
+// ============================================================================
+
+/**
+ * Negative Campaigning - Attack opponent with risk of backfire
+ */
+export const performNegativeCampaign = (state: GameState): ActionResult => {
+    const cost = 2000;
+    const energyCost = 3;
+
+    if (state.budget < cost || state.energy < energyCost) {
+        return { newState: state, success: false, message: "Not enough resources for negative campaign." };
+    }
+
+    // 30% chance of backfire
+    const backfires = Math.random() < 0.3;
+
+    let newState = JSON.parse(JSON.stringify(state));
+    const cName = CONSTITUENCIES[state.selectedConstituency].name;
+
+    if (backfires) {
+        // Backfire: You lose polling instead
+        newState = applyPollingChange(newState, state.selectedConstituency, 'player', -3);
+        newState.budget -= cost;
+        newState.energy -= energyCost;
+        newState.eventLog = [...newState.eventLog, `⚠️ Negative campaign in ${cName} BACKFIRED! Voters saw through the attack. Polling -3%`];
+        return { newState, success: true, message: "Negative campaign backfired!" };
+    } else {
+        // Success: Opponent loses polling
+        const partyIds = Object.keys(newState.parties) as PartyId[];
+        const opponents = partyIds.filter(id => id !== 'player');
+        const leadingOpponent = opponents.reduce((leader, id) => {
+            return newState.parties[id].constituencyPolling[state.selectedConstituency] >
+                newState.parties[leader].constituencyPolling[state.selectedConstituency] ? id : leader;
+        }, opponents[0]);
+
+        newState = applyPollingChange(newState, state.selectedConstituency, leadingOpponent, -5);
+        newState.budget -= cost;
+        newState.energy -= energyCost;
+        newState.eventLog = [...newState.eventLog, `💣 Negative campaign in ${cName} succeeded! ${newState.parties[leadingOpponent].name} -5%`];
+        return { newState, success: true, message: `Negative campaign damaged ${newState.parties[leadingOpponent].name}!` };
+    }
+};
+
+/**
+ * Emergency Rally - Massive one-time boost (can only use once per campaign)
+ */
+export const performEmergencyRally = (state: GameState): ActionResult => {
+    const cost = 5000;
+    const energyCost = 5;
+
+    if (state.hasUsedEmergencyRally) {
+        return { newState: state, success: false, message: "You've already used your emergency rally this campaign!" };
+    }
+
+    if (state.budget < cost || state.energy < energyCost) {
+        return { newState: state, success: false, message: "Not enough resources for emergency rally." };
+    }
+
+    const region = CONSTITUENCIES[state.selectedConstituency].region;
+    const regionName = region === 'flanders' ? 'Flanders' : region === 'wallonia' ? 'Wallonia' : 'Brussels';
+
+    let newState = JSON.parse(JSON.stringify(state));
+
+    // Apply massive boost to all constituencies in the region
+    newState = applyRegionalPollingChange(newState, region, 'player', 8);
+    newState.budget -= cost;
+    newState.energy -= energyCost;
+    newState.hasUsedEmergencyRally = true; // Mark as used
+    newState.eventLog = [...newState.eventLog, `🚨 EMERGENCY RALLY in ${regionName}! Massive turnout. Polling +8% across region!`];
+
+    return { newState, success: true, message: `Emergency rally in ${regionName} was a huge success!` };
+};
+
+/**
+ * Policy Announcement - Lock into stance for permanent boost/penalty
+ */
+export const performPolicyAnnouncement = (state: GameState): ActionResult => {
+    const energyCost = 2;
+
+    if (state.energy < energyCost) {
+        return { newState: state, success: false, message: "Not enough energy for policy announcement." };
+    }
+
+    const availableIssues = Object.keys(state.issues).filter(
+        issueId => !state.policyAnnouncementsMade.includes(issueId as IssueId)
+    ) as IssueId[];
+
+    if (availableIssues.length === 0) {
+        return { newState: state, success: false, message: "You've already announced policies on all issues!" };
+    }
+
+    const randomIssue = availableIssues[Math.floor(Math.random() * availableIssues.length)];
+    const issue = state.issues[randomIssue];
+
+    let newState = JSON.parse(JSON.stringify(state));
+
+    // Polarizing effect: +6% among aligned voters, -3% among opposed
+    // For simplification, apply net +3% overall
+    Object.keys(CONSTITUENCIES).forEach(cId => {
+        newState = applyPollingChange(newState, cId as ConstituencyId, 'player', 3);
+    });
+
+    newState.energy -= energyCost;
+    newState.policyAnnouncementsMade = [...newState.policyAnnouncementsMade, randomIssue];
+    newState.eventLog = [...newState.eventLog, `📢 Policy announcement on ${issue.name}! Stance locked. Net polling +3%`];
+
+    return { newState, success: true, message: `Announced strong stance on ${issue.name}!` };
+};
+
 
 // --- Main Action Dispatcher ---
 
@@ -293,6 +404,13 @@ export const handleAction = (state: GameState, actionType: ActionType): ActionRe
             return performTvAd(state);
         case 'debate':
             return performDebate(state);
+        // Phase 2: Strategic actions
+        case 'negative_campaign':
+            return performNegativeCampaign(state);
+        case 'emergency_rally':
+            return performEmergencyRally(state);
+        case 'policy_announcement':
+            return performPolicyAnnouncement(state);
         default:
             return { newState: state, success: false, message: `Action '${actionType}' is not implemented.` };
     }

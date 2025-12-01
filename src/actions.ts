@@ -1,6 +1,9 @@
 import type { ConstituencyId, PartyId, EventChoice, Law, Stance } from './types';
 
-export type ActionType = 'canvas' | 'posters' | 'rally' | 'fundraise' | 'tv_ad' | 'debate';
+export type ActionType =
+    | 'canvas' | 'posters' | 'rally' | 'fundraise' | 'tv_ad' | 'debate'
+    | 'negative_campaign' | 'emergency_rally' | 'policy_announcement'; // Phase 2: Strategic actions
+
 
 export type Action =
     | { type: 'PERFORM_ACTION'; payload: { actionType: ActionType } }

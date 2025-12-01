@@ -250,6 +250,10 @@ export interface GameState {
     coalitionPartners: PartyId[];
     selectedConstituency: ConstituencyId;
 
+    // Phase 2: Strategic action tracking
+    hasUsedEmergencyRally: boolean; // One-time restriction for emergency rally
+    policyAnnouncementsMade: IssueId[]; // Track locked-in policy stances
+
     parties: Record<PartyId, Party>;
     constituencies: Record<ConstituencyId, Constituency>; // Added from constants
     issues: Record<IssueId, Issue>;

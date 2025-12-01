@@ -175,6 +175,11 @@ export const createInitialState = (): GameState => {
         playerPartyId: 'player',
         coalitionPartners: [],
         selectedConstituency: 'antwerp',
+
+        // Phase 2: Strategic action tracking
+        hasUsedEmergencyRally: false,
+        policyAnnouncementsMade: [],
+
         constituencies: CONSTITUENCIES,
         parliament: { seats: [] },
         government: null,
