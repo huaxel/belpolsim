@@ -1,15 +1,35 @@
-import type { GameState, PartyId, Stance, Politician, ActionResult } from '../types';
+/**
+ * Coalition Formation Module
+ * 
+ * Handles coalition partner selection and government formation.
+ * Enforces Belgian political rules:
+ * - Cordon Sanitaire: No coalitions with extremist parties
+ * - Cabinet Parity: Equal Dutch/French-speaking ministers
+ * - Majority requirement: Coalition must have ≥76 seats
+ */
 
+import type { GameState, PartyId, Politician, ActionResult } from '../types';
+import { validateGovernment } from './government';
+
+/**
+ * Toggles a party's inclusion in coalition negotiations
+ * 
+ * Rules enforced:
+ * - Cannot add extremist parties (Cordon Sanitaire)
+ * - Can freely add/remove non-extremist parties
+ * 
+ * @param state - Current game state
+ * @param partnerId - Party to add/remove from coalition
+ * @returns Updated state with modified coalition partners list
+ */
 export const toggleCoalitionPartner = (state: GameState, partnerId: PartyId): ActionResult => {
     const partner = state.parties[partnerId];
 
+    // Enforce Cordon Sanitaire
     if (partner.isExtremist) {
         const message = `CORDON SANITAIRE: Cannot ally with ${partner.name}.`;
         return { newState: state, success: false, message };
     }
-
-    // Obsolete demand/redLine logic has been removed.
-    // The new Friction system will handle coalition compatibility.
 
     const current = state.coalitionPartners;
     const isPartner = current.includes(partnerId);
@@ -32,8 +52,19 @@ export const toggleCoalitionPartner = (state: GameState, partnerId: PartyId): Ac
     };
 };
 
-import { validateGovernment } from './government';
-
+/**
+ * Attempts to form a government with the selected coalition partners
+ * 
+ * Process:
+ * 1. Validates coalition has majority (≥76 seats)
+ * 2. Assigns ministers from coalition parties
+ * 3. Validates Cabinet Parity (equal Dutch/French ministers)
+ * 4. If valid, transitions to 'governing' phase
+ * 
+ * @param state - Current game state
+ * @param proposalPayload - Coalition details including partners, policy stances, and ministry distribution
+ * @returns Updated state with formed government or error message
+ */
 export const formGovernment = (
     state: GameState,
     proposalPayload: {
@@ -53,7 +84,9 @@ export const formGovernment = (
     // We'll assume for now that parties provide ministers of their own language region.
     // This is a simplification.
 
-    // --- Real Minister Assignment Logic ---
+    // --- Minister Assignment Logic ---
+    // Select politicians from each party to serve as ministers
+    // based on the number of ministries offered to that party
     const ministers: Politician[] = [];
 
     // We need to pick actual politicians to be ministers.

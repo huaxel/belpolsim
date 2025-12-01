@@ -1,3 +1,10 @@
+/**
+ * Initial Game State Generation
+ * 
+ * This file is responsible for creating the initial state of the game,
+ * including all parties, politicians, and game parameters.
+ */
+
 import {
     CONSTITUENCIES,
     INITIAL_BUDGET,
@@ -6,7 +13,6 @@ import {
 } from '../constants';
 import type {
     Politician,
-    Constituency,
     ConstituencyId,
     GameState,
     Party,
@@ -18,7 +24,25 @@ import type {
     Language,
 } from '../types';
 
-// --- Helper: Generate Initial Politicians ---
+// ============================================================================
+// POLITICIAN GENERATION
+// ============================================================================
+
+/**
+ * Generates politicians for a party in a specific constituency
+ * 
+ * Each politician is assigned:
+ * - Random charisma and expertise (1-10)
+ * - Random internal clout (0-100) which determines list position
+ * - Random popularity (0-100) for preference votes
+ * - No ministerial role initially (null)
+ * 
+ * @param partyId - The party this politician belongs to
+ * @param constituencyId - The constituency they're running in
+ * @param count - Number of politicians to generate (typically matches constituency seats)
+ * @param language - Language of the politician (Dutch or French)
+ * @returns Array of generated politicians
+ */
 const generatePoliticians = (partyId: PartyId, constituencyId: ConstituencyId, count: number, language: Language): Politician[] => {
     return Array.from({ length: count }).map((_, i) => ({
         id: `${partyId}-${constituencyId}-${i}`,
@@ -35,7 +59,30 @@ const generatePoliticians = (partyId: PartyId, constituencyId: ConstituencyId, c
     }));
 };
 
-// Helper to init party data
+// ============================================================================
+// PARTY INITIALIZATION
+// ============================================================================
+
+/**
+ * Initializes a political party with all necessary data
+ * 
+ * This function:
+ * - Sets up polling data for all constituencies
+ * - Generates politicians for eligible constituencies
+ * - Handles language assignment (Dutch for Flanders, French for Wallonia)
+ * - Special case: Brussels gets mixed language politicians
+ * 
+ * @param id - Unique party identifier
+ * @param name - Display name of the party
+ * @param color - Tailwind CSS color class
+ * @param isExtremist - Whether party triggers Cordon Sanitaire
+ * @param regions - Regions where party can compete
+ * @param basePolling - Starting polling percentage
+ * @param ideology - Economic and social ideology scores
+ * @param stances - Party positions on key issues
+ * @param negotiationThreshold - Willingness to compromise (0-100)
+ * @returns Fully initialized Party object
+ */
 const initParty = (
     id: PartyId,
     name: string,
@@ -78,6 +125,22 @@ const initParty = (
     };
 };
 
+// ============================================================================
+// INITIAL STATE CREATION
+// ============================================================================
+
+/**
+ * Creates the initial game state for a new campaign
+ * 
+ * This function sets up:
+ * - All 12 political issues
+ * - All 9 political parties with their politicians
+ * - Player character and starting resources
+ * - Game phase set to 'campaign'
+ * - Empty parliament (filled after election)
+ * 
+ * @returns Complete initial GameState ready to start the campaign
+ */
 export const createInitialState = (): GameState => {
 
     const issues: Record<IssueId, Issue> = {

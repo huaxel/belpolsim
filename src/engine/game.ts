@@ -1,7 +1,24 @@
 import { CONSTITUENCIES } from "../constants";
 import { EVENTS } from "../events";
-import type { GameState, PartyId, ConstituencyId, ActionResult } from "../types";
+/**
+ * Game Loop and Action Handlers
+ *
+ * This file contains the core game loop logic and all player action handlers.
+ *
+ * Key responsibilities:
+ * - Processing player actions (canvas, rally, posters, fundraise, TV ads, debates)
+ * - Turn advancement and resource regeneration
+ * - AI opponent moves
+ * - Random event generation
+ * - Polling changes based on actions
+ */
+
+import type { GameState, ConstituencyId, PartyId, ActionResult } from '../types';
 import type { ActionType } from '../actions';
+
+// ============================================================================
+// ACTION RESULT TYPE
+// ============================================================================
 
 // --- Pure Helper Functions for Polling Changes ---
 
