@@ -1,12 +1,14 @@
-import type { ConstituencyId, PartyId, EventChoice, Law, Stance } from './types';
+```typescript
+import type { ConstituencyId, PartyId, EventChoice, Law, Stance, DemographicGroup } from './types';
 
 export type ActionType =
     | 'canvas' | 'posters' | 'rally' | 'fundraise' | 'tv_ad' | 'debate'
-    | 'negative_campaign' | 'emergency_rally' | 'policy_announcement'; // Phase 2: Strategic actions
+    | 'negative_campaign' | 'emergency_rally' | 'policy_announcement' // Phase 2: Strategic actions
+    | 'social_media' | 'newspaper' | 'radio' | 'door_to_door'; // Campaign v2: Targeted actions
 
 
 export type Action =
-    | { type: 'PERFORM_ACTION'; payload: { actionType: ActionType } }
+    | { type: 'PERFORM_ACTION'; payload: { actionType: ActionType; targetDemographic?: DemographicGroup } }
     | { type: 'END_TURN' }
     | { type: 'HANDLE_EVENT_CHOICE'; payload: { choice: EventChoice } }
     | { type: 'TOGGLE_COALITION_PARTNER'; payload: { partnerId: PartyId } }
