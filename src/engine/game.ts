@@ -1,9 +1,10 @@
-import type { GameState, ActionResult, ConstituencyId, PartyId, RegionId, Politician, IssueId } from '../types';
+import type { GameState, ActionResult, ConstituencyId, PartyId, RegionId, Politician, IssueId, DemographicGroup } from '../types';
 import { CONSTITUENCIES } from '../constants';
 import { EVENTS } from '../events';
 import { determineInformateur } from './consultation';
 import { calculateBudgetImpact, generateCrisis, checkGovernmentStability } from './governing';
 import { getRandomCampaignEvent } from './campaignEvents';
+import { calculateCampaignEffect, calculatePollingFromStats, type CampaignActionType } from './campaignLogic';
 import type { ActionType } from '../actions';
 
 export const applyPollingChange = (state: GameState, constituencyId: ConstituencyId, partyId: PartyId, change: number): GameState => {
@@ -332,6 +333,106 @@ export const performPolicyAnnouncement = (state: GameState): ActionResult => {
     return { newState, success: true, message: `Announced strong stance on ${issue.name}!` };
 };
 
+// ============================================================================
+// CAMPAIGN V2: TARGETED CAMPAIGN ACTIONS
+// ============================================================================
+
+/**
+ * Apply campaign stats changes and update polling
+ */
+const applyCampaignStatsChange = (
+    state: GameState,
+    constituencyId: ConstituencyId,
+    partyId: PartyId,
+    awarenessChange: number,
+    favorabilityChange: number,
+    enthusiasmChange: number
+): GameState => {
+    const newState = JSON.parse(JSON.stringify(state));
+    const currentStats = newState.parties[partyId].campaignStats[constituencyId];
+
+    // Apply changes with clamping
+    currentStats.awareness = Math.max(0, Math.min(100, currentStats.awareness + awarenessChange));
+    currentStats.favorability = Math.max(0, Math.min(100, currentStats.favorability + favorabilityChange));
+    currentStats.enthusiasm = Math.max(0, Math.min(100, currentStats.enthusiasm + enthusiasmChange));
+
+    // Update polling from new stats
+    newState.parties[partyId].constituencyPolling[constituencyId] = calculatePollingFromStats(currentStats);
+
+    return newState;
+};
+
+/**
+ * Generic campaign v2 action handler
+ */
+const performCampaignV2Action = (
+    state: GameState,
+    actionType: CampaignActionType,
+    cost: number,
+    energyCost: number,
+    targetDemographic?: DemographicGroup
+): ActionResult => {
+    if (state.budget < cost) {
+        return { newState: state, success: false, message: `Not enough budget. Need €${cost}.` };
+    }
+    if (state.energy < energyCost) {
+        return { newState: state, success: false, message: `Not enough energy. Need ${energyCost} energy.` };
+    }
+
+    const constituency = CONSTITUENCIES[state.selectedConstituency];
+    const currentStats = state.parties.player.campaignStats[state.selectedConstituency];
+    const leadCandidate = state.parties.player.politicians[state.selectedConstituency]?.[0];
+
+    // Calculate effect using campaign logic
+    const effect = calculateCampaignEffect(
+        {
+            type: actionType,
+            budget: cost,
+            targetConstituency: state.selectedConstituency,
+            targetDemographic
+        },
+        currentStats,
+        constituency,
+        leadCandidate
+    );
+
+    // Apply changes
+    let newState = applyCampaignStatsChange(
+        state,
+        state.selectedConstituency,
+        'player',
+        effect.awarenessChange,
+        effect.favorabilityChange,
+        effect.enthusiasmChange
+    );
+
+    newState.budget -= cost;
+    newState.energy -= energyCost;
+
+    const targetDesc = targetDemographic ? ` (targeting ${targetDemographic})` : '';
+    const actionName = actionType.replace('_', ' ');
+    const logMsg = `${actionName} in ${constituency.name}${targetDesc}: +${effect.awarenessChange.toFixed(1)}% awareness, +${effect.favorabilityChange.toFixed(1)}% favorability, +${effect.enthusiasmChange.toFixed(1)}% enthusiasm (${(effect.estimatedReach * 100).toFixed(0)}% reach)`;
+    newState.eventLog = [...newState.eventLog, `Turn ${newState.turn}: ${logMsg}`];
+
+    return { newState, success: true, message: logMsg };
+};
+
+export const performSocialMedia = (state: GameState, targetDemographic?: DemographicGroup): ActionResult => {
+    return performCampaignV2Action(state, 'social_media', 1000, 1, targetDemographic);
+};
+
+export const performNewspaper = (state: GameState, targetDemographic?: DemographicGroup): ActionResult => {
+    return performCampaignV2Action(state, 'newspaper', 2000, 1, targetDemographic);
+};
+
+export const performRadio = (state: GameState, targetDemographic?: DemographicGroup): ActionResult => {
+    return performCampaignV2Action(state, 'radio', 1500, 1, targetDemographic);
+};
+
+export const performDoorToDoor = (state: GameState, targetDemographic?: DemographicGroup): ActionResult => {
+    return performCampaignV2Action(state, 'door_to_door', 0, 3, targetDemographic); // Free but costs 3 energy
+};
+
 
 // --- Main Action Dispatcher ---
 
@@ -413,13 +514,13 @@ export const handleAction = (state: GameState, actionType: ActionType, targetDem
             return performPolicyAnnouncement(state);
         // Campaign v2: Targeted actions
         case 'social_media':
-            return { newState: state, success: false, message: "Social media campaigns coming soon!" };
+            return performSocialMedia(state, targetDemographic);
         case 'newspaper':
-            return { newState: state, success: false, message: "Newspaper ads coming soon!" };
+            return performNewspaper(state, targetDemographic);
         case 'radio':
-            return { newState: state, success: false, message: "Radio ads coming soon!" };
+            return performRadio(state, targetDemographic);
         case 'door_to_door':
-            return { newState: state, success: false, message: "Door-to-door campaigns coming soon!" };
+            return performDoorToDoor(state, targetDemographic);
         default:
             return { newState: state, success: false, message: `Action '${actionType}' is not implemented.` };
     }
