@@ -1,19 +1,11 @@
-# BelPolSim: The Master Plan
+# BelPolSim: Development Roadmap
 
-**Authored by:** The Product Manager (The "Vision")
+**Version:** 2.0
+**Status:** Active
 
 ## 1. The Single Source of Truth
 
 This document is the **only** official source of truth for the BelPolSim development roadmap and task list. It supersedes all previous planning documents.
-
-**The following documents are now obsolete and have been deleted:**
--   `docs/agile_plan.md`
--   `docs/tasks.md`
--   `docs/TODO.md`
--   `docs/project_status_and_roadmap.md`
--   `docs/consolidated_design.md` (superseded by `SYSTEM_ARCHITECTURE.md`)
-
-Having multiple sources of truth leads to confusion and wasted effort. From now on, we work from this plan.
 
 ## 2. High-Level Roadmap
 
@@ -23,7 +15,13 @@ Our development is divided into clear phases.
     -   A playable, basic game loop with D'Hondt elections and a simple majority-based coalition system.
 
 -   **Phase 2: Coalition & Ideology Overhaul** - `[x] Complete`
-    -   Our current and sole focus. The goal is to make negotiations deep, strategic, and engaging. The core engine logic and data models for this phase are now robustly implemented.
+    -   Deep coalition negotiations with friction, cordon sanitaire, and ideology matching.
+
+-   **Phase 2.5: Campaign UX & Strategic Depth** - `[x] Complete`
+    -   **Campaign v2 Engine:** Awareness/Favorability/Enthusiasm model.
+    -   **War Room UI:** Interactive dashboard with demographics and projections.
+    -   **Smart Features:** AI recommendations and Auto-Campaign system.
+    -   **Strategic Actions:** Negative campaigning, rallies, and media blitzes.
 
 -   **Phase 3: The Governing Phase** - `[ ] In Progress`
     -   The game shouldn't end when the government is formed. This phase introduces the challenges of ruling: passing laws, managing the budget, and keeping the coalition together.

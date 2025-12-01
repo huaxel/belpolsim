@@ -1,10 +1,11 @@
-# BelPolSim: Definitive System Architecture & Data Models
+# BelPolSim: Technical Architecture & Data Models
 
-**Authored by:** The Systems Architect
+**Version:** 2.0
+**Status:** Active
 
 ## 1. Overview
 
-This document provides the single source of truth for the BelPolSim system architecture and core data models. It is designed to be modular, scalable, and provide a clear blueprint for development, incorporating the requirements for Phase 2 and beyond.
+This document provides the single source of truth for the BelPolSim system architecture and core data models. It is designed to be modular, scalable, and provide a clear blueprint for development.
 
 The core design separates the **Engine (logic)** from the **View (UI)**, with a central **State Management** layer acting as the intermediary.
 
@@ -19,7 +20,7 @@ The system is divided into three primary layers:
 ```
 +-------------------------------------------------------------+
 |                     UI Layer (React)                        |
-| <Header/> <Map/> <ActionGrid/> <CoalitionInterface/> ...    |
+| <Header/> <Map/> <CampaignDashboard/> <CoalitionInterface/> |
 |       +                                                     |
 |       | Dispatches actions (e.g., "FORM_COALITION")         |
 |       v                                                     |
@@ -39,7 +40,7 @@ The system is divided into three primary layers:
 |                                                             |
 |   +------------------+   +------------------+   +---------+ |
 |   | Simulation       |   | Game Loop        |   | Event   | |
-|   | (D'Hondt,         |   | (Turn/Phase Mgmt)|   | System  | |
+|   | (D'Hondt,        |   | (Turn/Phase Mgmt)|   | System  | |
 |   |  Friction)       |   |                  |   |         | |
 |   +------------------+   +------------------+   +---------+ |
 +-------------------------------------------------------------+
@@ -118,6 +119,10 @@ export interface Party {
     // Link to politicians
     candidates: Record<ConstituencyId, Politician[]>;
     totalSeats: number;
+
+    // Campaign v2 Stats
+    campaignStats: Record<ConstituencyId, CampaignStats>; // Awareness, Favorability, Enthusiasm
+    autoCampaign?: AutoCampaignStrategy;
 }
 
 // Represents an individual politician
@@ -166,22 +171,29 @@ This architecture is designed to enforce the unique rules of the Belgian politic
 -   **Cabinet Parity**: Enforced when forming a `Government` object. The creation logic must validate that the number of `Politician` objects with `language: 'dutch'` equals the number with `language: 'french'`.
 -   **Competency Limits**: The `Issue` data model includes a `competency` field. In future phases, the `engine/game.ts` `performAction` function will check if the acting minister's `competencyLevel` matches the issue's `competency` before allowing a policy change.
 
-## 5. Data Flow Example for Phase 2: Coalition Negotiation
+## 5. Directory Structure
 
-This example demonstrates how the new data models will work.
-
-1.  **User Interaction**: In the `CoalitionInterface.tsx`, the player adjusts a slider for the 'taxation' issue.
-2.  **Dispatch Action**: The component calls `dispatch({ type: 'UPDATE_COALITION_PROPOSAL', payload: { issueId: 'taxation', position: 45 } })`.
-3.  **Reducer**: The `useGameLogic` reducer receives the action.
-4.  **Engine Call**: The reducer calls a new function, `calculateAllFrictions(gameState, newProposal)`, from `src/engine/simulations/coalition.ts`.
-5.  **Logic Execution**: The `calculateAllFrictions` function:
-    -   Loops through all potential coalition partners.
-    -   For each partner, it calculates a `frictionScore` by comparing the `newProposal` stances against the party's own `stances` array, weighted by `salience`.
-    -   It returns a map of `{[partyId]: frictionScore}`.
-6.  **State Update**: The reducer receives the friction scores and updates a `negotiationState` object within the main `GameState`.
-7.  **UI Re-render**: The `CoalitionInterface.tsx` reads the updated friction scores and changes the "mood" emoji next to each party leader in real-time.
-
-## 6. Directory Structure
-
-The proposed directory structure from the previous version of this document remains valid. All new data models will reside in `src/types.ts` (or `src/types/index.ts`), and all new engine logic will be in the appropriate module within `src/engine/`.
-
+```
+src/
+├── actions.ts          # Action definitions and types
+├── constants.ts        # Game constants (constituency data, etc.)
+├── types.ts            # Core data models (GameState, Party, etc.)
+├── main.tsx            # Entry point
+├── App.tsx             # Root component
+├── components/         # React components (UI Layer)
+│   ├── CampaignDashboard.tsx
+│   ├── CoalitionInterface.tsx
+│   ├── GameView.tsx
+│   └── ...
+├── engine/             # Pure game logic (Engine Layer)
+│   ├── ai.ts           # AI decision making
+│   ├── campaignLogic.ts # Campaign math (awareness, enthusiasm)
+│   ├── coalition.ts    # Coalition friction and formation
+│   ├── election.ts     # D'Hondt and seat allocation
+│   ├── game.ts         # Main game loop and action handlers
+│   ├── government.ts   # Government validation
+│   ├── persistence.ts  # Save/Load logic
+│   └── state.ts        # State initialization
+└── hooks/              # React hooks (State Management Layer)
+    └── useGameLogic.ts # Main reducer and action dispatchers
+```

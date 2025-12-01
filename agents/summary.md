@@ -5,10 +5,10 @@ This document outlines the roles and responsibilities of the different AI agents
 ## The Team
 
 - **[The Belgian Politics Expert](./roles/belgian_politics_expert.md):** Provides requirements and expert knowledge on the Belgian political system.
-- **[The Product Manager](./roles/product_manager.md):** Oversees the project's vision, prioritizes features, and ensures consistency.
+- **[The Product Manager](./roles/product_manager.md):** Oversees the project's vision, prioritizes features, ensures consistency, and **manages narrative design**.
 - **[The Systems Architect](./roles/systems_architect.md):** Responsible for data modeling, defining types, and structuring the game's state.
 - **[The Logic Engineer](./roles/logic_engineer.md):** Writes the core game logic, algorithms, and mathematical functions.
-- **[The Frontend Specialist](./roles/frontend_specialist.md):** Builds the user interface and visual components.
+- **[The Frontend Specialist](./roles/frontend_specialist.md):** Builds the user interface, **designs UX flows**, and **manages visual assets**.
 - **[The QA Engineer](./roles/qa_engineer.md):** Writes tests, finds bugs, and ensures the quality of the code.
 
 ### A Note on Collaboration

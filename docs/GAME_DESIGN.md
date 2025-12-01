@@ -1,6 +1,7 @@
-# Core Requirements for a Realistic Simulation of the Belgian Federal Political System
+# BelPolSim: Game Design Document
 
-**Authored by:** The Belgian Politics Expert (The "Oracle")
+**Version:** 2.0
+**Status:** Active
 
 ## 1. Introduction: The Belgian Labyrinth
 
@@ -15,7 +16,7 @@ The game will be turn-based, with each turn representing one week. The gameplay 
 3.  **Election Day (1 turn):** The election takes place. Seats are allocated based on the results.
 4.  **Coalition Formation Phase (can take months):** The heart of the game. Negotiating with other parties to form a new government. This phase is crucial and should be detailed.
 
-## 3. Key Feature Requirements (Priority Order)
+## 3. Key Feature Requirements
 
 ### 3.1. The Electoral System: Proportional Representation
 
@@ -43,6 +44,13 @@ This must be the most detailed and in-depth part of the game.
 -   **Coalition Agreement (`Regeerakkoord`):** The negotiations should be represented by a system where parties propose and debate specific policy points (see the "Policy Sliders" example). The final agreement is a compromise between the coalition partners.
 -   **Ministerial Posts:** The distribution of ministerial posts should be a key part of the negotiation. More powerful ministries (e.g., Prime Minister, Finance, Foreign Affairs) should be more valuable.
 
+#### 3.3.1. Coalition Mechanics Improvements (Implemented)
+The coalition negotiation interface has been enhanced to provide better visual feedback:
+-   **Visual Policy Alignment Indicators:** Policy sliders show colored dots representing where each coalition partner stands on each issue.
+-   **Friction Breakdown Display:** For selected partners or parties with high friction (>20), the interface shows the top 3 most contentious issues.
+-   **Real-time Feedback:** Mood emojis update as you adjust policy sliders, and friction scores recalculate instantly.
+-   **Friction Algorithm:** `friction = Σ(|your_position - their_position| × their_salience)`
+
 ### 3.4. The Cordon Sanitaire
 
 -   **Definition:** A formal agreement between mainstream parties to never enter into a coalition with extremist parties (historically, the far-right Vlaams Belang and the far-left PTB/PVDA).
@@ -57,7 +65,37 @@ This must be the most detailed and in-depth part of the game.
     -   Acting as the party's main spokesperson in the media.
     -   Leading coalition negotiations.
 
-## 4. Winning and Losing
+## 4. Campaign System v2 (The War Room)
+
+In BelPolSim, campaigning isn't just clicking "Rally" → "Get Votes." It is a resource management puzzle where you convert Time (Energy) and Money into Awareness and Enthusiasm.
+
+### 4.1. Core Mechanics
+-   **Three-Stat System:**
+    -   **Awareness (Name Recognition):** Do voters know who you are? (Cap at 100%).
+    -   **Favorability (Appeal):** Do they like what you say? (Hard to move).
+    -   **Enthusiasm (Turnout):** Will they actually vote for you over a rival with similar views?
+-   **Demographics:** Each Constituency has a breakdown (Youth, Retirees, Workers, Upper Class).
+-   **Voter Profiles:** Each demographic has preferred Issue positions (e.g., Youth = Pro-Climate).
+
+### 4.2. The Funnel Model
+1.  **Awareness Cap:** You cannot get votes if `awareness` is low. Posters increase awareness but have diminishing returns.
+2.  **Demographic Multiplier:**
+    -   "Social Media Ad" -> 1.5x effect on 'Youth', 0.2x effect on 'Retirees'.
+    -   "Newspaper Ad" -> Reverse those weights.
+3.  **Cost Efficiency:**
+    -   TV Ads: Expensive, Low Impact per person, Massive Reach.
+    -   Door-to-Door: Free (Energy cost), High Impact per person, Tiny Reach.
+
+### 4.3. The "Head of List" Bonus
+In Belgium, people vote for the party, but often because of the leader.
+-   **Mechanic:** If your "Lead Candidate" (Lijsttrekker) has high Charisma, all campaign actions in that province get a multiplier (e.g., 1.2x).
+-   **Strategy:** Spend heavy budget in provinces where you have a famous candidate.
+
+### 4.4. Smart Recommendations & Auto-Campaign
+-   **Smart Recommendations:** The system analyzes polling margins to identify "Critical" (<3%), "Competitive" (<7%), and "Safe" regions. It suggests the optimal action based on the largest demographic group.
+-   **Auto-Campaign:** Players can configure a strategy (budget limit, priority targets) to automatically execute campaign actions at the end of each turn, reducing micromanagement.
+
+## 5. Winning and Losing
 
 -   **Winning:** There is no single "win" condition. Success should be measured by:
     -   Being in government and holding key ministerial posts.
@@ -69,22 +107,20 @@ This must be the most detailed and in-depth part of the game.
     -   A major election defeat.
     -   Losing the leadership of your party.
 
-## 6. Implementation Status (As of Playtest 1)
+## 6. Implementation Status
 
 ### Implemented Features
 - [x] **Electoral System:** D'Hondt method, 5% threshold, and constituency-based seat allocation are fully functional.
 - [x] **Party System:** Parties have ideologies, stances, and are restricted by language/region.
 - [x] **Cordon Sanitaire:** Hard-coded blocking of extremist parties in coalition formation.
 - [x] **Basic Coalition Formation:** Ability to select partners and form a government if majority is reached.
-- [x] **Cabinet Parity:** Logic exists to enforce equal Dutch/French representation (though UI needs refinement).
+- [x] **Cabinet Parity:** Logic exists to enforce equal Dutch/French representation.
+- [x] **Campaign System:** Deep campaign mechanics with demographics, awareness/enthusiasm stats, and strategic actions.
+- [x] **Party List Management:** Players can reorder candidates on their lists.
+- [x] **Smart Recommendations & Auto-Campaign:** AI-driven assistance for the campaign phase.
 
 ### Missing / In-Progress Features
-- [ ] **The King & Informateur:** Currently, the game skips these steps. The player immediately acts as Formateur. This needs to be added for narrative realism.
-- [ ] **Party List Management:** Players cannot yet influence the order of candidates on their lists.
+- [ ] **The King & Informateur:** Currently, the game skips these steps. The player immediately acts as Formateur.
 - [ ] **Detailed Coalition Agreement:** The negotiation of specific policy points is simplified. A "slider" or "minigame" mechanic is needed here.
 - [ ] **Minister Assignment UI:** The logic for assigning ministers exists, but the UI for selecting specific politicians for specific posts is a placeholder.
-
-## 7. Future Considerations
-
-For future expansions, we could consider adding the regional (Flemish, Walloon, Brussels) and community levels of government, which would add another layer of complexity and realism to the simulation. The interaction between these different levels of government is a key part of Belgian politics.
-
+- [ ] **Governing Phase:** Passing laws, managing budget, and stability (Phase 3 of Roadmap).
