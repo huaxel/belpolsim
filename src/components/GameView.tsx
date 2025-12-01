@@ -48,8 +48,6 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
     }, [shouldLoad]);
 
     const renderContent = () => {
-        const region = CONSTITUENCIES[gameState.selectedConstituency].region;
-        const regionName = region === 'flanders' ? 'Flanders' : region === 'wallonia' ? 'Wallonia' : 'Brussels';
 
         switch (activeView) {
             case 'dashboard':
@@ -63,6 +61,7 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
                                     onPerformAction={(actionType, targetDemographic) => {
                                         handleAction(actionType, targetDemographic);
                                     }}
+                                    onSelectConstituency={setSelectedConstituency}
                                 />
                             )}
                             {gameState.gamePhase === 'governing' && (

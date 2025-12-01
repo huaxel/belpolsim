@@ -16,8 +16,10 @@ import type {
     Constituency,
     CampaignStats,
     Politician,
-    DemographicGroup
+    DemographicGroup,
+    GameState
 } from '../types';
+import { CONSTITUENCIES } from '../constants';
 
 // ============================================================================
 // ACTION TYPES & INTERFACES
@@ -299,4 +301,79 @@ export const calculateCampaignEffect = (
  */
 export const calculatePollingFromStats = (stats: CampaignStats): number => {
     return (stats.awareness * 0.3) + (stats.favorability * 0.4) + (stats.enthusiasm * 0.3);
+};
+
+// ============================================================================
+// STRATEGIC RECOMMENDATIONS
+// ============================================================================
+
+export interface CampaignRecommendation {
+    constituencyId: ConstituencyId;
+    priority: 'critical' | 'competitive' | 'safe';
+    margin: number;
+    recommendedAction: CampaignActionType;
+    recommendedDemographic?: DemographicGroup;
+    reasoning: string;
+}
+
+const getActionForDemographic = (demo: DemographicGroup): CampaignActionType => {
+    switch (demo) {
+        case 'youth': return 'social_media';
+        case 'retirees': return 'newspaper';
+        case 'workers': return 'radio';
+        case 'upper_class': return 'newspaper';
+    }
+};
+
+/**
+ * Generate strategic recommendations based on polling margins and demographics
+ */
+export const generateRecommendations = (
+    state: GameState
+): CampaignRecommendation[] => {
+    const recommendations: CampaignRecommendation[] = [];
+
+    Object.keys(CONSTITUENCIES).forEach(constId => {
+        const id = constId as ConstituencyId;
+        const constituency = CONSTITUENCIES[id];
+        const playerPolling = state.parties.player.constituencyPolling[id];
+
+        // Find leading opponent
+        const opponentPolling = Math.max(
+            ...Object.values(state.parties)
+                .filter(p => p.id !== 'player')
+                .map(p => p.constituencyPolling[id] || 0)
+        );
+
+        const margin = Math.abs(playerPolling - opponentPolling);
+
+        // Determine priority
+        let priority: 'critical' | 'competitive' | 'safe';
+        if (margin < 3) priority = 'critical';
+        else if (margin < 7) priority = 'competitive';
+        else priority = 'safe';
+
+        // Recommend action based on demographics
+        const demographics = constituency.demographics;
+        // Find largest demographic group
+        const largestDemo = (Object.entries(demographics) as [DemographicGroup, number][])
+            .sort(([, a], [, b]) => b - a)[0][0];
+
+        const recommendedAction = getActionForDemographic(largestDemo);
+
+        recommendations.push({
+            constituencyId: id,
+            priority,
+            margin,
+            recommendedAction,
+            recommendedDemographic: largestDemo,
+            reasoning: `Target ${largestDemo} (${(demographics[largestDemo] * 100).toFixed(0)}% of voters)`
+        });
+    });
+
+    // Sort by priority (critical first)
+    return recommendations.sort((a, b) => {
+        const priorityOrder = { critical: 0, competitive: 1, safe: 2 };
+        return priorityOrder[a.priority] - priorityOrder[b.priority];
+    });
 };
