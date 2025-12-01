@@ -69,6 +69,22 @@ This must be the most detailed and in-depth part of the game.
     -   A major election defeat.
     -   Losing the leadership of your party.
 
-## 5. Future Considerations
+## 6. Implementation Status (As of Playtest 1)
+
+### Implemented Features
+- [x] **Electoral System:** D'Hondt method, 5% threshold, and constituency-based seat allocation are fully functional.
+- [x] **Party System:** Parties have ideologies, stances, and are restricted by language/region.
+- [x] **Cordon Sanitaire:** Hard-coded blocking of extremist parties in coalition formation.
+- [x] **Basic Coalition Formation:** Ability to select partners and form a government if majority is reached.
+- [x] **Cabinet Parity:** Logic exists to enforce equal Dutch/French representation (though UI needs refinement).
+
+### Missing / In-Progress Features
+- [ ] **The King & Informateur:** Currently, the game skips these steps. The player immediately acts as Formateur. This needs to be added for narrative realism.
+- [ ] **Party List Management:** Players cannot yet influence the order of candidates on their lists.
+- [ ] **Detailed Coalition Agreement:** The negotiation of specific policy points is simplified. A "slider" or "minigame" mechanic is needed here.
+- [ ] **Minister Assignment UI:** The logic for assigning ministers exists, but the UI for selecting specific politicians for specific posts is a placeholder.
+
+## 7. Future Considerations
 
 For future expansions, we could consider adding the regional (Flemish, Walloon, Brussels) and community levels of government, which would add another layer of complexity and realism to the simulation. The interaction between these different levels of government is a key part of Belgian politics.
+
