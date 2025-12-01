@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { TrendingDown, Save, LogOut } from 'lucide-react';
-import { useGameLogic } from '@/shared/hooks';
+import { useGameLogic } from '@/shared/hooks/useGameLogic';
+import { mapECSToLegacyState } from '@/shared/utils/legacyMapper';
 import { Layout, EventLog, EventModal, ToastProvider } from '@/shared/components';
 import { BelgiumMap } from '@/features/map';
 import { PollingDashboard, ParliamentView } from '@/features/election';
@@ -20,17 +21,22 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
         handleAction,
         endTurn,
         handleEventChoice,
+        toggleCoalitionPartner,
+        formGovernment,
         setSelectedConstituency,
         saveGame,
         loadGame,
         dispatch,
-        toggleCoalitionPartner,
-        formGovernment,
         reorderList,
         resolveCrisis,
         voteOnLegislation,
         updateAutoCampaign
     } = useGameLogic();
+
+    // Map ECS state to legacy format for UI compatibility
+    const legacyState = useMemo(() => mapECSToLegacyState(gameState), [gameState]);
+    // Use legacyState instead of gameState in render
+
 
     const [activeView, setActiveView] = useState('dashboard');
 
@@ -38,7 +44,7 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
         if (shouldLoad) {
             loadGame();
         }
-    }, [shouldLoad]);
+    }, [shouldLoad, loadGame]);
 
     const renderContent = () => {
 
@@ -47,32 +53,32 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
                 return (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in duration-500">
                         <div className="lg:col-span-2 space-y-6">
-                            {gameState.gamePhase === 'campaign' && (
+                            {legacyState.gamePhase === 'campaign' && (
                                 <CampaignDashboard
-                                    gameState={gameState}
-                                    selectedConstituency={gameState.selectedConstituency}
-                                    onPerformAction={(actionType, targetDemographic) => {
+                                    gameState={legacyState}
+                                    selectedConstituency={legacyState.selectedConstituency}
+                                    onPerformAction={(actionType: any, targetDemographic: any) => {
                                         handleAction(actionType, targetDemographic);
                                     }}
                                     onSelectConstituency={setSelectedConstituency}
                                     onUpdateAutoCampaign={updateAutoCampaign}
                                 />
                             )}
-                            {gameState.gamePhase === 'governing' && (
+                            {legacyState.gamePhase === 'governing' && (
                                 <GovernmentDashboard
-                                    gameState={gameState}
-                                    onUpdateState={(newState) => dispatch({ type: 'LOAD_GAME', payload: newState })}
+                                    gameState={legacyState}
+                                    onUpdateState={(newState: any) => dispatch({ type: 'LOAD_GAME', payload: newState })}
                                 />
                             )}
-                            <PollingDashboard gameState={gameState} />
+                            <PollingDashboard gameState={legacyState} />
                         </div>
                         <div className="space-y-6">
-                            <EventLog logs={gameState.eventLog} />
+                            <EventLog logs={legacyState.eventLog} />
                             <button
                                 onClick={endTurn}
                                 className="w-full py-4 btn-primary shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center transition-all"
                             >
-                                End Turn {gameState.turn} <TrendingDown className="ml-2" />
+                                End Turn {legacyState.turn} <TrendingDown className="ml-2" />
                             </button>
                         </div>
                     </div>
@@ -84,33 +90,34 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
                             <h2 className="text-xl font-bold mb-4">Electoral Map</h2>
                             <div className="flex-1 flex items-center justify-center bg-black/5 rounded-lg">
                                 <BelgiumMap
-                                    gameState={gameState}
+                                    gameState={legacyState}
+                                    selectedConstituency={legacyState.selectedConstituency}
                                     onSelect={setSelectedConstituency}
                                 />
                             </div>
                         </div>
                         <div className="space-y-6">
-                            <PollingDashboard gameState={gameState} />
+                            <PollingDashboard gameState={legacyState} />
                         </div>
                     </div>
                 );
             case 'parliament':
                 return (
                     <div className="space-y-6 animate-in fade-in duration-500">
-                        {gameState.gamePhase === 'consultation' && (
-                            <KingsPalace gameState={gameState} onAction={dispatch} />
+                        {legacyState.gamePhase === 'consultation' && (
+                            <KingsPalace gameState={legacyState} onAction={dispatch} />
                         )}
-                        {gameState.gamePhase === 'formation' && (
+                        {legacyState.gamePhase === 'formation' && (
                             <CoalitionInterface
-                                gameState={gameState}
+                                gameState={legacyState}
                                 onTogglePartner={toggleCoalitionPartner}
                                 onFormGovernment={formGovernment}
                             />
                         )}
-                        {gameState.gamePhase === 'governing' && (
-                            <ParliamentView gameState={gameState} onVote={voteOnLegislation} />
+                        {legacyState.gamePhase === 'governing' && (
+                            <ParliamentView gameState={legacyState} onVote={voteOnLegislation} />
                         )}
-                        {gameState.gamePhase === 'campaign' && (
+                        {legacyState.gamePhase === 'campaign' && (
                             <div className="text-center p-12 text-slate-500">
                                 <h2 className="text-2xl font-bold mb-2">Parliament is currently dissolved</h2>
                                 <p>Elections will take place after the campaign.</p>
@@ -121,7 +128,7 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
             case 'party':
                 return (
                     <div className="max-w-4xl mx-auto h-[calc(100vh-120px)] animate-in fade-in duration-500">
-                        <PartyListEditor gameState={gameState} onReorder={reorderList} />
+                        <PartyListEditor gameState={legacyState} onReorder={reorderList} />
                     </div>
                 );
             case 'settings':
@@ -143,12 +150,12 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
 
     return (
         <ToastProvider>
-            <Layout state={gameState} activeView={activeView} onViewChange={setActiveView}>
-                {gameState.currentEvent && (
-                    <EventModal event={gameState.currentEvent} onChoice={handleEventChoice} />
+            <Layout state={legacyState} activeView={activeView} onViewChange={setActiveView}>
+                {legacyState.currentEvent && (
+                    <EventModal event={legacyState.currentEvent} onChoice={handleEventChoice} />
                 )}
-                {gameState.crises.length > 0 && (
-                    <CrisisModal crisis={gameState.crises[0]} onResolve={resolveCrisis} />
+                {legacyState.crises.length > 0 && (
+                    <CrisisModal crisis={legacyState.crises[0]} onResolve={resolveCrisis} />
                 )}
                 {renderContent()}
             </Layout>

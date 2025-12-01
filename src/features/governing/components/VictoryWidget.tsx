@@ -7,7 +7,10 @@
 
 import { Target, TrendingUp, Users } from 'lucide-react';
 import type { World } from '@/core';
-import { MAJORITY_SEATS, TOTAL_SEATS } from '@/core';
+import { TOTAL_PARLIAMENT_SEATS } from '@/core';
+
+const TOTAL_SEATS = TOTAL_PARLIAMENT_SEATS;
+const MAJORITY_SEATS = Math.floor(TOTAL_SEATS / 2) + 1;
 
 // Type aliases for backwards compatibility
 type GameState = World;
@@ -28,6 +31,9 @@ export const VictoryWidget = ({ gameState }: VictoryWidgetProps) => {
     const hasMajority = isProjectedMajority(gameState);
 
     const progressPercentage = (projectedSeats / MAJORITY_SEATS) * 100;
+
+    // const playerParty = gameState.parties[gameState.playerPartyId];
+
 
     return (
         <div className="bg-gradient-to-br from-indigo-900 to-purple-900 p-6 rounded-xl shadow-lg border border-indigo-700">
@@ -72,8 +78,8 @@ export const VictoryWidget = ({ gameState }: VictoryWidgetProps) => {
 
             {/* Status Message */}
             <div className={`p-3 rounded-lg ${hasMajority
-                    ? 'bg-green-900/30 border border-green-700'
-                    : 'bg-orange-900/30 border border-orange-700'
+                ? 'bg-green-900/30 border border-green-700'
+                : 'bg-orange-900/30 border border-orange-700'
                 }`}>
                 <p className="text-sm text-white flex items-center">
                     <TrendingUp size={16} className="mr-2" />
@@ -93,8 +99,8 @@ export const VictoryWidget = ({ gameState }: VictoryWidgetProps) => {
                 <div className="bg-indigo-950/50 p-3 rounded-lg border border-indigo-800">
                     <div className="text-xs text-indigo-300 mb-1">Current Polling</div>
                     <div className="text-lg font-bold text-white">
-                        {(Object.values(gameState.parties.player.constituencyPolling).reduce((a, b) => a + b, 0) /
-                            Object.values(gameState.parties.player.constituencyPolling).length).toFixed(1)}%
+                        {(Object.values((gameState.parties as any).player.constituencyPolling as Record<string, number>).reduce((a, b) => a + b, 0) /
+                            Object.values((gameState.parties as any).player.constituencyPolling).length).toFixed(1)}%
                     </div>
                 </div>
                 <div className="bg-indigo-950/50 p-3 rounded-lg border border-indigo-800">

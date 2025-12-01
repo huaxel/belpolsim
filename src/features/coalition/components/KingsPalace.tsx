@@ -33,8 +33,8 @@ export const KingsPalace: React.FC<KingsPalaceProps> = ({ gameState, onAction })
                     <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Election Results</h3>
                     <div className="space-y-2">
                         {Object.values(gameState.parties)
-                            .sort((a, b) => b.totalSeats - a.totalSeats)
-                            .map(party => (
+                            .sort((a: any, b: any) => b.totalSeats - a.totalSeats)
+                            .map((party: any) => (
                                 <div key={party.id} className="flex justify-between items-center">
                                     <div className="flex items-center gap-2">
                                         <div className={`w-3 h-3 rounded-full ${party.color}`} />

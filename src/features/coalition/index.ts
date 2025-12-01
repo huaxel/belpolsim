@@ -4,9 +4,9 @@
  * Components for coalition formation and negotiation.
  */
 
-export { default as CoalitionInterface } from './components/CoalitionInterface';
-export { default as CoalitionPhaseModal } from './components/CoalitionPhaseModal';
-export { default as PartnerSelection } from './components/PartnerSelection';
-export { default as PolicyNegotiation } from './components/PolicyNegotiation';
-export { default as CoalitionSummary } from './components/CoalitionSummary';
-export { default as KingsPalace } from './components/KingsPalace';
+export { CoalitionInterface } from './components/CoalitionInterface';
+export { CoalitionPhaseModal } from './components/CoalitionPhaseModal';
+export { PartnerSelection } from './components/PartnerSelection';
+export { PolicyNegotiation } from './components/PolicyNegotiation';
+export { CoalitionSummary } from './components/CoalitionSummary';
+export { KingsPalace } from './components/KingsPalace';

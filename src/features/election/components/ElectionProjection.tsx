@@ -8,7 +8,10 @@
 import { useState } from 'react';
 import { BarChart3, Users, AlertCircle, CheckCircle } from 'lucide-react';
 import type { World } from '@/core';
-import { MAJORITY_SEATS, TOTAL_SEATS } from '@/core';
+import { TOTAL_PARLIAMENT_SEATS } from '@/core';
+
+const TOTAL_SEATS = TOTAL_PARLIAMENT_SEATS;
+const MAJORITY_SEATS = Math.floor(TOTAL_SEATS / 2) + 1;
 
 // Type alias for backwards compatibility
 type GameState = World;

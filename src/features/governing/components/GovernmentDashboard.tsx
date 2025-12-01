@@ -110,7 +110,7 @@ export const GovernmentDashboard: React.FC<GovernmentDashboardProps> = ({ gameSt
                         <div className="text-sm text-blue-300">{government.primeMinister?.partyId.toUpperCase()}</div>
                     </div>
                     <div className="h-64 overflow-y-auto space-y-2 pr-2">
-                        {government.ministers.map((minister) => (
+                        {government.ministers.map((minister: any) => (
                             <div key={minister.id} className="p-2 bg-slate-700/50 rounded flex justify-between items-center">
                                 <div>
                                     <div className="font-medium">{minister.name}</div>
@@ -140,7 +140,7 @@ export const GovernmentDashboard: React.FC<GovernmentDashboardProps> = ({ gameSt
                                 onChange={(e) => setSelectedIssue(e.target.value as IssueId)}
                                 className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white"
                             >
-                                {Object.values(issues).map(issue => (
+                                {Object.values(issues).map((issue: any) => (
                                     <option key={issue.id} value={issue.id}>{issue.name}</option>
                                 ))}
                             </select>

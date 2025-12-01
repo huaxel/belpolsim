@@ -1,5 +1,7 @@
 import { CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
-import { TOTAL_SEATS } from '@/core';
+import { TOTAL_PARLIAMENT_SEATS } from '@/core';
+
+const TOTAL_SEATS = TOTAL_PARLIAMENT_SEATS;
 
 // Type alias for backwards compatibility
 type PartyId = string;

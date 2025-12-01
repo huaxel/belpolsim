@@ -54,6 +54,7 @@ export interface Identity {
   description?: string;
   type: EntityType;
   tags?: string[];
+  color?: string;
 }
 
 /**
@@ -80,6 +81,13 @@ export interface Stats {
   ambition?: number;                 // 0-100
   popularity?: number;               // 0-100
 
+  // Campaign Stats (Per Constituency)
+  campaignStats?: Record<EntityId, {
+    awareness: number;
+    favorability: number;
+    enthusiasm: number;
+  }>;
+
   // Government Stats
   approval?: number;                 // 0-100
   stability?: number;                // 0-100
@@ -94,15 +102,16 @@ export interface Stats {
 export interface Relations {
   // Positive/negative sentiment toward other entities (-100 to 100)
   sentiment?: Record<EntityId, number>;
-  
+
   // Coalition/alliance relationships
   coalitionPartner?: boolean;
   coalitionFriction?: number;         // 0-100, tension level
-  
+
   // Hierarchical relationships
   memberOf?: EntityId;                // e.g., politician belongs to party
+  representedConstituency?: EntityId; // e.g., politician runs in constituency
   leaderOf?: EntityId;                // e.g., politician leads party
-  
+
   // Historical relationships
   formerCoalitionWith?: EntityId[];
   rivalries?: EntityId[];
@@ -118,7 +127,7 @@ export interface Resources {
   politicalCapital?: number;          // Spendable influence points
   actionPoints?: number;              // Per-turn actions
   influence?: number;                 // General influence level
-  
+
   // Resource generation rates
   incomePerTurn?: number;
   capitalGenerationRate?: number;
@@ -131,20 +140,20 @@ export interface Resources {
 export interface TransientStatus {
   // Active modifiers with expiration
   modifiers?: Modifier[];
-  
+
   // Current state flags
   isInCrisis?: boolean;
   isUnderInvestigation?: boolean;
   isInCampaignMode?: boolean;
   isNegotiating?: boolean;
-  
+
   // Cordon Sanitaire (Belgian-specific)
   isUnderCordonSanitaire?: boolean;
-  
+
   // Temporary boosts/penalties
   pollingBoost?: number;
   approvalPenalty?: number;
-  
+
   // Cooldowns
   lastCampaignAction?: number;        // Turn number
   negotiationCooldown?: number;       // Turns remaining
@@ -179,10 +188,10 @@ export interface ModifierEffect {
 export interface PartyPlatform {
   // Position on issues (-100 to 100, left to right / against to for)
   positions: Record<EntityId, number>;
-  
+
   // Priority issues
   priorityIssues: EntityId[];
-  
+
   // Manifesto promises
   manifestoPromises?: string[];
 }
@@ -195,10 +204,18 @@ export interface ConstituencyData {
   language: 'dutch' | 'french' | 'bilingual';
   seats: number;
   population: number;
-  
+
   // Voting patterns
   historicalResults?: Record<EntityId, number>;  // Party -> vote share
   swingFactor?: number;                          // How volatile the constituency is
+
+  // Demographics
+  demographics?: {
+    youth: number;
+    retirees: number;
+    workers: number;
+    upper_class: number;
+  };
 }
 
 /**
@@ -247,7 +264,7 @@ export interface Components {
   relations: ComponentTable<Relations>;
   resources: ComponentTable<Resources>;
   transientStatus: ComponentTable<TransientStatus>;
-  
+
   // Domain-specific
   partyPlatform: ComponentTable<PartyPlatform>;
   constituencyData: ComponentTable<ConstituencyData>;
@@ -262,7 +279,7 @@ export interface Components {
 /**
  * GamePhase - Current phase of the game
  */
-export type GamePhase = 
+export type GamePhase =
   | 'setup'
   | 'campaign'
   | 'election'
@@ -308,24 +325,24 @@ export interface Globals {
   currentTurn: number;
   currentPhase: GamePhase;
   playerParty: EntityId;
-  
+
   // Election state
   lastElectionResult?: ElectionResult;
   nextElectionTurn?: number;
-  
+
   // Government state
   currentCoalition?: Coalition;
   governmentApproval?: number;
-  
+
   // Consultation/Formation state
   informateur?: EntityId;
   formateur?: EntityId;
   consultationRound?: number;
-  
+
   // Historical data
   electionHistory: ElectionResult[];
   coalitionHistory: Coalition[];
-  
+
   // Game settings
   difficulty: 'easy' | 'normal' | 'hard';
   autoCampaign: boolean;
@@ -363,7 +380,7 @@ export interface GameAction {
 /**
  * CampaignAction - Specific campaign actions
  */
-export type CampaignActionType = 
+export type CampaignActionType =
   | 'rally'
   | 'advertisement'
   | 'doorToDoor'
@@ -438,13 +455,13 @@ export interface ActionResult {
  */
 export interface ISystem {
   readonly name: string;
-  
+
   /**
    * Update the game state for this system
    * Pure function: same input always produces same output
    */
   update(state: GameState): GameState;
-  
+
   /**
    * Check if this system should run in the current phase
    */
@@ -459,12 +476,12 @@ export interface IActionProcessor {
    * Process a player/AI action
    */
   processAction(state: GameState, action: GameAction): ActionResult;
-  
+
   /**
    * Get available actions for an entity
    */
   getAvailableActions(state: GameState, actor: EntityId): GameAction[];
-  
+
   /**
    * Validate if an action can be performed
    */

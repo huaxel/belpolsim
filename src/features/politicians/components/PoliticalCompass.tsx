@@ -94,7 +94,7 @@ export const PoliticalCompass: React.FC<PoliticalCompassProps> = ({ parties, pol
                             className={`absolute w-2 h-2 rounded-full border border-slate-500`}
                             style={{
                                 left: `${padding + x - 4}px`, // Smaller dot, slightly offset
-                                top: `${padding + y - 4 + (Math.random() * 10 - 5)}px`, // Small random offset to distinguish
+                                top: `${padding + y - 4}px`, // Removed random offset for purity
                                 backgroundColor: party.color.replace('bg-', '#')
                             }}
                             title={`${politician.name} (${party.name})`}

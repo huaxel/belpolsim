@@ -1,6 +1,9 @@
 import { useState, useMemo } from 'react';
 import type { World } from '@/core';
-import { MAJORITY_SEATS } from '@/core';
+import { TOTAL_PARLIAMENT_SEATS } from '@/core';
+
+const TOTAL_SEATS = TOTAL_PARLIAMENT_SEATS;
+const MAJORITY_SEATS = Math.floor(TOTAL_SEATS / 2) + 1;
 
 // Type aliases for backwards compatibility
 type GameState = World;
@@ -32,7 +35,7 @@ export const CoalitionInterface = ({ gameState, onTogglePartner, onFormGovernmen
 
     // Local state for the policy proposal being negotiated
     const [negotiationStances, setNegotiationStances] = useState<Stance[]>(() =>
-        playerParty.stances.length > 0 ? playerParty.stances : Object.values(gameIssues).map(issue => ({
+        playerParty.stances.length > 0 ? playerParty.stances : Object.values(gameIssues).map((issue: any) => ({
             issueId: issue.id,
             position: 50, // Default to a neutral stance if player has no initial stances
             salience: 5 // Default salience
@@ -41,7 +44,7 @@ export const CoalitionInterface = ({ gameState, onTogglePartner, onFormGovernmen
     const [ministriesOffered, setMinistriesOffered] = useState<Partial<Record<PartyId, number>>>({});
 
     // Calculate total seats for the current selected partners
-    const currentCoalitionSeats = playerParty.totalSeats + coalitionPartners.reduce((acc, id) => acc + parties[id].totalSeats, 0);
+    const currentCoalitionSeats = playerParty.totalSeats + coalitionPartners.reduce((acc: number, id: string) => acc + parties[id].totalSeats, 0);
     const majorityReached = currentCoalitionSeats >= MAJORITY_SEATS;
 
     // Calculate friction for each potential partner in real-time
@@ -58,7 +61,7 @@ export const CoalitionInterface = ({ gameState, onTogglePartner, onFormGovernmen
 
     // Calculate AI Feedback for selected partners
     const aiFeedback = useMemo(() => {
-        return coalitionPartners.map(partnerId => {
+        return coalitionPartners.map((partnerId: string) => {
             const evaluation = evaluateCoalitionOffer(partnerId, gameState, {
                 partners: [...coalitionPartners, gameState.playerPartyId],
                 ministerialDistribution: ministriesOffered as Record<PartyId, number>,

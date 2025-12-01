@@ -21,6 +21,7 @@ const CONSTITUENCIES: Record<ConstituencyId, { name: string }> = {
 
 interface BelgiumMapProps {
     gameState: GameState;
+    selectedConstituency?: string;
     onSelect: (id: ConstituencyId) => void;
 }
 
@@ -60,14 +61,14 @@ const MAP_LABELS: Record<ConstituencyId, { x: number, y: number }> = {
     luxembourg: { x: 105, y: 105 }
 };
 
-export const BelgiumMap = ({ gameState, onSelect }: BelgiumMapProps) => {
+export const BelgiumMap = ({ gameState, selectedConstituency, onSelect }: BelgiumMapProps) => {
     const getLeadingPartyColor = (cId: ConstituencyId): string => {
         let maxPoll = -1;
         let leader: EntityId | null = null;
 
         // Use ECS queries to get party data
         const partyIds = getAllParties(gameState);
-        
+
         partyIds.forEach(partyId => {
             // For now, use national polling as constituency polling isn't implemented
             const poll = getPartyPolling(gameState, partyId);
@@ -98,7 +99,7 @@ export const BelgiumMap = ({ gameState, onSelect }: BelgiumMapProps) => {
         return '#d1d5db'; // Gray default
     };
 
-    const selectedConstituency = gameState.globals.selectedConstituencyId;
+    // const selectedConstituency = gameState.globals.selectedConstituencyId;
 
     return (
         <div className="w-full h-full flex flex-col items-center justify-center">

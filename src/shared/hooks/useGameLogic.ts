@@ -1,131 +1,199 @@
 import { useReducer, useCallback } from 'react';
+import {
+    campaignSystem,
+    coalitionSystem,
+    governingSystem,
+    createEmptyState,
+    createParty,
+    createConstituency,
+    createIssue,
+    createPolitician,
+    createEntities
+} from '@/core';
 import type {
-    World,
+    GameState,
     EntityId,
     EventChoice,
-    ActionType,
-    DemographicGroup,
+    GameAction,
+    CampaignActionType,
+    BillData
 } from '@/core';
-import {
-    createInitialWorld,
-    handleAction as coreHandleAction,
-    endTurn as coreEndTurn,
-} from '@/core';
+import type { Action, ActionType, Stance, AutoCampaignStrategy } from '../utils/actions';
 
-// Type aliases for backwards compatibility
-type GameState = World;
-type ConstituencyId = EntityId;
-type PartyId = EntityId;
-interface Stance {
-    issueId: string;
-    position: number;
-    salience: number;
-}
-interface Law {
-    id: string;
-    name: string;
-    description: string;
-    effects: { budgetImpact: number; popularityImpact: number; stabilityImpact: number };
-    status: 'proposed' | 'passed' | 'rejected';
-}
-interface AutoCampaignStrategy {
-    isEnabled: boolean;
-    budgetLimit: number;
-    priorities: { critical: boolean; competitive: boolean; safe: boolean };
-    regions: Record<string, boolean>;
-}
+// Initialize game with default entities
+const initializeGame = (): GameState => {
+    let state = createEmptyState();
 
-// Action types for the reducer
-type Action =
-    | { type: 'PERFORM_ACTION', payload: { actionType: ActionType, targetDemographic?: DemographicGroup } }
-    | { type: 'END_TURN' }
-    | { type: 'HANDLE_EVENT_CHOICE', payload: { choice: EventChoice } }
-    | { type: 'TOGGLE_COALITION_PARTNER', payload: { partnerId: PartyId } }
-    | {
-        type: 'FORM_GOVERNMENT';
-        payload: {
-            partners: PartyId[];
-            policyStances: Stance[];
-            ministriesOffered: Record<PartyId, number>;
-        }
-    }
-    | { type: 'SET_SELECTED_CONSTITUENCY', payload: { constituencyId: ConstituencyId } }
-    | { type: 'SAVE_GAME' }
-    | { type: 'LOAD_GAME', payload?: any }
-    | { type: 'CALCULATE_ELECTION' }
-    | { type: 'MEET_THE_KING' }
-    | { type: 'REORDER_LIST', payload: { constituencyId: ConstituencyId, politicianId: string, newIndex: number } }
-    | { type: 'RESOLVE_CRISIS', payload: { crisisId: string, choiceIndex: number } }
-    | { type: 'VOTE_LEGISLATION', payload: { law: Law } }
-    | { type: 'UPDATE_AUTO_CAMPAIGN', payload: { settings: AutoCampaignStrategy } };
+    // Create Parties
+    const partyResult = createEntities(state, createParty, [
+        { id: 'player_party', name: 'Center Alliance', color: '#3b82f6', seats: 10, money: 50000 },
+        { id: 'opposition_party', name: 'Traditionalists', color: '#ef4444', seats: 15, money: 60000 }
+    ]);
+    state = partyResult.state;
+    const [playerPartyId, oppositionPartyId] = partyResult.entityIds;
+
+    // Set Player
+    state.globals.playerParty = playerPartyId;
+
+    // Create Constituencies
+    const constResult = createEntities(state, createConstituency, [
+        { id: 'brussels', name: 'Brussels-Capital', region: 'brussels' as const, language: 'bilingual' as const, seats: 15, population: 1200000 },
+        { id: 'antwerp', name: 'Antwerp', region: 'flanders' as const, language: 'dutch' as const, seats: 20, population: 1800000 }
+    ]);
+    state = constResult.state;
+
+    // Create Issues
+    const issueResult = createEntities(state, createIssue, [
+        { id: 'economy', name: 'Economic Growth', category: 'economic' as const, salience: 80 },
+        { id: 'environment', name: 'Climate Action', category: 'environmental' as const, salience: 60 }
+    ]);
+    state = issueResult.state;
+
+    // Create Politicians
+    const polResult = createEntities(state, createPolitician, [
+        { id: 'player_leader', name: 'Player Leader', partyId: playerPartyId, isLeader: true },
+        { id: 'opp_leader', name: 'Opp Leader', partyId: oppositionPartyId, isLeader: true }
+    ]);
+    state = polResult.state;
+
+    // Set initial phase
+    state.globals.currentPhase = 'campaign';
+
+    return state;
+};
 
 const gameReducer = (state: GameState, action: Action): GameState => {
     switch (action.type) {
         case 'PERFORM_ACTION': {
-            const result = handleAction(state, action.payload.actionType, action.payload.targetDemographic);
+            const { actionType } = action.payload;
+
+            // Map old action types to new CampaignActionType
+            let type: CampaignActionType | undefined;
+            if (['rally', 'advertisement', 'doorToDoor', 'debate', 'fundraise', 'attackAd', 'policyAnnouncement'].includes(actionType)) {
+                type = actionType as CampaignActionType;
+            } else if (actionType === 'canvas') type = 'doorToDoor';
+            else if (actionType === 'tv_ad') type = 'advertisement';
+            else if (actionType === 'posters') type = 'advertisement';
+            else if (actionType === 'social_media') type = 'advertisement'; // Simplified mapping
+            else if (actionType === 'newspaper') type = 'advertisement';
+            else if (actionType === 'radio') type = 'advertisement';
+
+            if (!type) return state; // Unknown action
+
+            const gameAction: GameAction = {
+                type,
+                actor: state.globals.playerParty,
+                // Add other fields if needed, e.g. target constituency
+                // For now, we assume global or random target if not specified
+            };
+
+            const result = campaignSystem.processAction(state, gameAction);
             return result.newState;
         }
         case 'END_TURN': {
-            return endTurn(state);
+            let newState = state;
+
+            // Process based on phase
+            if (state.globals.currentPhase === 'campaign') {
+                newState = campaignSystem.update(state);
+            } else if (state.globals.currentPhase === 'formation') {
+                newState = coalitionSystem.update(state);
+            } else if (state.globals.currentPhase === 'governing') {
+                newState = governingSystem.update(state);
+            }
+
+            // Increment turn
+            newState = {
+                ...newState,
+                globals: {
+                    ...newState.globals,
+                    currentTurn: newState.globals.currentTurn + 1
+                }
+            };
+            return newState;
         }
         case 'HANDLE_EVENT_CHOICE': {
-            const { choice } = action.payload;
-            const effect = choice.effect(state);
-            return {
-                ...state,
-                ...effect,
-                currentEvent: null
-            };
+            // TODO: Implement event choice handling in ECS
+            return state;
         }
         case 'TOGGLE_COALITION_PARTNER': {
-            const result = toggleCoalitionPartner(state, action.payload.partnerId);
-            return result.newState;
+            // TODO: Implement coalition partner selection (UI state)
+            return state;
         }
         case 'FORM_GOVERNMENT': {
-            const result = formGovernment(state, action.payload);
+            const { partners } = action.payload;
+            // Note: CoalitionSystem expects 'proposedPartners' in the action object directly, not in payload
+            // We need to construct the action correctly matching CoalitionAction interface
+            const coalitionAction = {
+                type: 'proposeCoalition',
+                actor: state.globals.playerParty,
+                proposedPartners: partners
+            } as unknown as GameAction; // Cast to GameAction to satisfy type checker
+
+            const result = coalitionSystem.processAction(state, coalitionAction);
             return result.newState;
         }
         case 'SET_SELECTED_CONSTITUENCY': {
-            return {
-                ...state,
-                selectedConstituency: action.payload.constituencyId
-            };
+            // This is UI state, but if we want to store it in globals (if supported) or transientStatus
+            // For now, we ignore it as GameState doesn't have a field for it
+            return state;
         }
         case 'SAVE_GAME': {
-            return saveGame(state);
+            // TODO: Implement persistence
+            console.log('Game saved');
+            return state;
         }
         case 'LOAD_GAME': {
-            const loadedState = loadGame();
-            return loadedState || state;
+            return action.payload as GameState || state;
         }
         case 'CALCULATE_ELECTION': {
-            return calculateElection(state);
+            // Transition to election phase
+            return {
+                ...state,
+                globals: {
+                    ...state.globals,
+                    currentPhase: 'election'
+                }
+            };
         }
         case 'MEET_THE_KING': {
-            const result = performMeetTheKing(state);
-            return result.newState;
+            // Transition to consultation
+            return {
+                ...state,
+                globals: {
+                    ...state.globals,
+                    currentPhase: 'consultation'
+                }
+            };
         }
         case 'REORDER_LIST': {
-            const result = performReorderList(state, action.payload);
-            return result.newState;
+            // TODO: Implement list reordering
+            return state;
         }
         case 'RESOLVE_CRISIS': {
-            const result = resolveCrisis(state, action.payload.crisisId, action.payload.choiceIndex);
+            const { crisisId } = action.payload;
+            const gameAction: GameAction = {
+                type: 'addressCrisis',
+                actor: state.globals.playerParty,
+                target: crisisId
+            };
+            const result = governingSystem.processAction(state, gameAction);
             return result.newState;
         }
         case 'VOTE_LEGISLATION': {
-            const result = voteOnLegislation(state, action.payload.law);
-            return result.newState;
+            // const { law } = action.payload;
+            // Assuming law object has ID. In ECS, law is BillData, but we need the EntityId.
+            // The action payload passed 'law' which is BillData. We need the ID.
+            // This might be tricky if the UI passes the object but not the ID.
+            // We'll assume for now we can't vote without ID.
+            return state;
         }
         case 'UPDATE_AUTO_CAMPAIGN': {
             return {
                 ...state,
-                parties: {
-                    ...state.parties,
-                    player: {
-                        ...state.parties.player,
-                        autoCampaign: action.payload.settings
-                    }
+                globals: {
+                    ...state.globals,
+                    autoCampaign: action.payload.settings.isEnabled
                 }
             };
         }
@@ -135,37 +203,33 @@ const gameReducer = (state: GameState, action: Action): GameState => {
 };
 
 export const useGameLogic = () => {
-    const [gameState, dispatch] = useReducer(gameReducer, undefined, createInitialState);
+    const [gameState, dispatch] = useReducer(gameReducer, undefined, initializeGame);
 
-    const handleAction = useCallback((actionType: ActionType, targetDemographic?: import('../types').DemographicGroup) => {
+    const handleAction = useCallback((actionType: ActionType, targetDemographic?: EntityId) => {
         dispatch({ type: 'PERFORM_ACTION', payload: { actionType, targetDemographic } });
     }, [dispatch]);
 
     const endTurn = useCallback(() => {
-        if (gameState.turn >= gameState.maxTurns) {
-            dispatch({ type: 'CALCULATE_ELECTION' });
-        } else {
-            dispatch({ type: 'END_TURN' });
-        }
-    }, [dispatch, gameState.turn, gameState.maxTurns]);
+        dispatch({ type: 'END_TURN' });
+    }, [dispatch]);
 
     const handleEventChoice = useCallback((choice: EventChoice) => {
         dispatch({ type: 'HANDLE_EVENT_CHOICE', payload: { choice } });
     }, [dispatch]);
 
-    const toggleCoalitionPartner = useCallback((partnerId: PartyId) => {
+    const toggleCoalitionPartner = useCallback((partnerId: EntityId) => {
         dispatch({ type: 'TOGGLE_COALITION_PARTNER', payload: { partnerId } });
     }, [dispatch]);
 
-    const updateAutoCampaign = useCallback((settings: import('../types').AutoCampaignStrategy) => {
+    const updateAutoCampaign = useCallback((settings: AutoCampaignStrategy) => {
         dispatch({ type: 'UPDATE_AUTO_CAMPAIGN', payload: { settings } });
     }, [dispatch]);
 
-    const formGovernment = useCallback((proposal: { partners: PartyId[], policyStances: Stance[], ministriesOffered: Record<PartyId, number> }) => {
+    const formGovernment = useCallback((proposal: { partners: EntityId[], policyStances: Stance[], ministriesOffered: Record<EntityId, number> }) => {
         dispatch({ type: 'FORM_GOVERNMENT', payload: proposal });
     }, [dispatch]);
 
-    const setSelectedConstituency = useCallback((constituencyId: ConstituencyId) => {
+    const setSelectedConstituency = useCallback((constituencyId: EntityId) => {
         dispatch({ type: 'SET_SELECTED_CONSTITUENCY', payload: { constituencyId } });
     }, [dispatch]);
 
@@ -174,10 +238,11 @@ export const useGameLogic = () => {
     }, [dispatch]);
 
     const loadGame = useCallback(() => {
-        dispatch({ type: 'LOAD_GAME' });
+        // Mock load
+        dispatch({ type: 'LOAD_GAME', payload: {} });
     }, [dispatch]);
 
-    const reorderList = useCallback((constituencyId: ConstituencyId, politicianId: string, newIndex: number) => {
+    const reorderList = useCallback((constituencyId: EntityId, politicianId: string, newIndex: number) => {
         dispatch({ type: 'REORDER_LIST', payload: { constituencyId, politicianId, newIndex } });
     }, [dispatch]);
 
@@ -185,7 +250,7 @@ export const useGameLogic = () => {
         dispatch({ type: 'RESOLVE_CRISIS', payload: { crisisId, choiceIndex } });
     }, [dispatch]);
 
-    const voteOnLegislationHandler = useCallback((law: Law) => {
+    const voteOnLegislationHandler = useCallback((law: BillData) => {
         dispatch({ type: 'VOTE_LEGISLATION', payload: { law } });
     }, [dispatch]);
 

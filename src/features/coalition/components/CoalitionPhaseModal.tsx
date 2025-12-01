@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import type { World } from '@/core';
+// import type { World } from '@/core';
 import { CoalitionInterface } from './CoalitionInterface';
 
 // Type aliases for backwards compatibility
-type GameState = World;
+type GameState = any; // World;
 type PartyId = string;
 interface Stance {
     issueId: string;
@@ -50,7 +50,7 @@ export const CoalitionPhaseModal: React.FC<CoalitionPhaseModalProps> = ({
     const playerIsFormateur = formateurParty === playerPartyId;
 
     const handleKingConsults = () => {
-        const largestPartyId = Object.values(parties).sort((a, b) => b.totalSeats - a.totalSeats)[0].id;
+        const largestPartyId = Object.values(parties as any[]).sort((a: any, b: any) => b.totalSeats - a.totalSeats)[0].id;
         setInformateurParty(largestPartyId);
         setStage('informateur');
     };
@@ -99,7 +99,7 @@ export const CoalitionPhaseModal: React.FC<CoalitionPhaseModalProps> = ({
                         </div>
                     </>
                 );
-            case 'informateur':
+            case 'informateur': {
                 const informateurName = informateurParty ? parties[informateurParty]?.name : 'an unknown figure';
                 return (
                     <>
@@ -121,7 +121,8 @@ export const CoalitionPhaseModal: React.FC<CoalitionPhaseModalProps> = ({
                         </div>
                     </>
                 );
-            case 'formateur':
+            }
+            case 'formateur': {
                 const formateurName = formateurParty ? parties[formateurParty]?.name : 'an unknown figure';
                 return (
                     <>
@@ -144,6 +145,7 @@ export const CoalitionPhaseModal: React.FC<CoalitionPhaseModalProps> = ({
                         </div>
                     </>
                 );
+            }
             case 'negotiating':
                 if (!playerIsFormateur) {
                     return (

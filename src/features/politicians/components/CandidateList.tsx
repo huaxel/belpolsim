@@ -16,7 +16,7 @@ export const CandidateList = ({ gameState }: CandidateListProps) => {
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
             <h3 className="font-bold mb-4">Candidates: {CONSTITUENCIES[gameState.selectedConstituency].name}</h3>
             <div className="grid grid-cols-2 gap-2">
-                {candidates.map(c => (
+                {candidates.map((c: any) => (
                     <div key={c.id} className={`p-2 rounded border ${c.isElected ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-100'}`}>
                         <div className="flex justify-between items-center">
                             <span className={`font-medium ${c.isElected ? 'text-green-700' : 'text-gray-700'}`}>

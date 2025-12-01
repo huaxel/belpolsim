@@ -4,12 +4,13 @@
  * Reusable UI components used across features.
  */
 
-export { default as Layout } from './Layout';
-export { default as Header } from './Header';
-export { default as Sidebar } from './Sidebar';
-export { default as TopBar } from './TopBar';
-export { default as EventModal } from './EventModal';
-export { default as EventLog } from './EventLog';
+export { Layout } from './Layout';
+export { Header } from './Header';
+export { Sidebar } from './Sidebar';
+export { TopBar } from './TopBar';
+export { EventModal } from './EventModal';
+export { EventLog } from './EventLog';
 
 // UI Primitives
-export { ToastProvider, useToast } from './ui/ToastProvider';
+export { ToastProvider } from './ui/ToastProvider';
+export { useToast } from './ui/ToastContext';

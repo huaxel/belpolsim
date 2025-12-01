@@ -1,0 +1,73 @@
+
+> belpolsim@0.0.0 lint
+> eslint .
+
+
+/Users/juanbenjumea/coding/projects/belpolsim/src/features/campaign/components/CampaignDashboard.tsx
+  14:10  error  'campaignSystem' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/juanbenjumea/coding/projects/belpolsim/src/features/campaign/components/CampaignRecommendations.tsx
+  11:34  error  '_gameState' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/juanbenjumea/coding/projects/belpolsim/src/features/campaign/components/TurnSummary.tsx
+  20:35  error  '_gameState' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/juanbenjumea/coding/projects/belpolsim/src/features/coalition/components/CoalitionInterface.tsx
+  16:32  error  '_parties' is defined but never used      @typescript-eslint/no-unused-vars
+  16:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  16:47  error  '_stances' is defined but never used      @typescript-eslint/no-unused-vars
+  17:33  error  '_partnerId' is defined but never used    @typescript-eslint/no-unused-vars
+  17:54  error  '_gameState' is defined but never used    @typescript-eslint/no-unused-vars
+  17:77  error  '_offer' is defined but never used        @typescript-eslint/no-unused-vars
+  17:85  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/juanbenjumea/coding/projects/belpolsim/src/features/coalition/components/CoalitionPhaseModal.tsx
+  103:17  error  Unexpected lexical declaration in case block  no-case-declarations
+  125:17  error  Unexpected lexical declaration in case block  no-case-declarations
+
+/Users/juanbenjumea/coding/projects/belpolsim/src/features/coalition/components/KingsPalace.tsx
+  10:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/juanbenjumea/coding/projects/belpolsim/src/features/coalition/components/PartnerSelection.tsx
+  25:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/juanbenjumea/coding/projects/belpolsim/src/features/coalition/components/PolicyNegotiation.tsx
+  17:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/juanbenjumea/coding/projects/belpolsim/src/features/election/components/ElectionProjection.tsx
+  18:35  error  '_gameState' is defined but never used  @typescript-eslint/no-unused-vars
+  19:36  error  '_gameState' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/juanbenjumea/coding/projects/belpolsim/src/features/election/components/ParliamentView.tsx
+  17:21  error  '_partyId' is defined but never used    @typescript-eslint/no-unused-vars
+  17:40  error  '_gameState' is defined but never used  @typescript-eslint/no-unused-vars
+  17:63  error  '_law' is defined but never used        @typescript-eslint/no-unused-vars
+
+/Users/juanbenjumea/coding/projects/belpolsim/src/features/governing/components/GovernmentDashboard.tsx
+  17:24  error  '_bill' is defined but never used         @typescript-eslint/no-unused-vars
+  17:37  error  '_gameState' is defined but never used    @typescript-eslint/no-unused-vars
+  29:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/juanbenjumea/coding/projects/belpolsim/src/features/governing/components/VictoryWidget.tsx
+  17:35  error  '_gameState' is defined but never used  @typescript-eslint/no-unused-vars
+  18:30  error  '_gameState' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/juanbenjumea/coding/projects/belpolsim/src/features/politicians/components/PoliticalCompass.tsx
+  97:60  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/juanbenjumea/coding/projects/belpolsim/src/features/politicians/components/PoliticalCompass.tsx:97:60
+   95 |                             style={{
+   96 |                                 left: `${padding + x - 4}px`, // Smaller dot, slightly offset
+>  97 |                                 top: `${padding + y - 4 + (Math.random() * 10 - 5)}px`, // Small random offset to distinguish
+      |                                                            ^^^^^^^^^^^^^ Cannot call impure function
+   98 |                                 backgroundColor: party.color.replace('bg-', '#')
+   99 |                             }}
+  100 |                             title={`${politician.name} (${party.name})`}  react-hooks/purity
+
+/Users/juanbenjumea/coding/projects/belpolsim/src/pages/GameView.tsx
+  41:8  warning  React Hook useEffect has a missing dependency: 'loadGame'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+✖ 27 problems (26 errors, 1 warning)
+

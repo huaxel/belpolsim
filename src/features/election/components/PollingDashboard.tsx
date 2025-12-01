@@ -10,10 +10,10 @@ interface PollingDashboardProps {
 }
 
 export const PollingDashboard = ({ gameState }: PollingDashboardProps) => {
-    const parties = Object.values(gameState.parties);
+    const parties = Object.values(gameState.parties as any);
 
     // Sort by polling in selected constituency
-    const sortedParties = [...parties].sort((a, b) =>
+    const sortedParties = [...parties].sort((a: any, b: any) =>
         b.constituencyPolling[gameState.selectedConstituency] - a.constituencyPolling[gameState.selectedConstituency]
     );
 
@@ -30,7 +30,7 @@ export const PollingDashboard = ({ gameState }: PollingDashboardProps) => {
                 </div>
 
                 <div className="space-y-3">
-                    {sortedParties.map(party => {
+                    {sortedParties.map((party: any) => {
                         const percentage = party.constituencyPolling[gameState.selectedConstituency];
                         if (percentage < 0.1) return null; // Hide negligible parties
 
@@ -53,7 +53,7 @@ export const PollingDashboard = ({ gameState }: PollingDashboardProps) => {
             </div>
 
             {/* Political Compass */}
-            <PoliticalCompass parties={parties} />
+            <PoliticalCompass parties={parties as any[]} />
         </div>
     );
 };

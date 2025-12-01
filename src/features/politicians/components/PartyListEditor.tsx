@@ -16,7 +16,7 @@ interface PartyListEditorProps {
 
 export const PartyListEditor: React.FC<PartyListEditorProps> = ({ gameState, onReorder }) => {
     const [selectedConstituency, setSelectedConstituency] = useState<ConstituencyId>('antwerp');
-    const playerParty = gameState.parties.player;
+    const playerParty = (gameState.parties as any).player;
     const politicians = playerParty.politicians[selectedConstituency] || [];
 
     // Sort by list position
@@ -47,7 +47,7 @@ export const PartyListEditor: React.FC<PartyListEditorProps> = ({ gameState, onR
                     onChange={(e) => setSelectedConstituency(e.target.value as ConstituencyId)}
                     className="p-2 border rounded-lg bg-slate-50 font-medium"
                 >
-                    {playerParty.eligibleConstituencies.map(cId => (
+                    {playerParty.eligibleConstituencies.map((cId: string) => (
                         <option key={cId} value={cId}>
                             {CONSTITUENCIES[cId].name} ({CONSTITUENCIES[cId].seats} seats)
                         </option>

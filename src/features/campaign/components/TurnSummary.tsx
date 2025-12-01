@@ -32,10 +32,10 @@ export const TurnSummary = ({ currentState, previousState, onContinue }: TurnSum
     // Calculate polling changes for each party
     const partyIds = Object.keys(currentState.parties) as PartyId[];
     const pollingChanges = partyIds.map(partyId => {
-        const currentAvg = Object.values(currentState.parties[partyId].constituencyPolling)
-            .reduce((sum, val) => sum + val, 0) / Object.values(currentState.parties[partyId].constituencyPolling).length;
-        const previousAvg = Object.values(previousState.parties[partyId].constituencyPolling)
-            .reduce((sum, val) => sum + val, 0) / Object.values(previousState.parties[partyId].constituencyPolling).length;
+        const currentAvg = (Object.values(currentState.parties[partyId].constituencyPolling) as number[])
+            .reduce((sum: number, val: number) => sum + val, 0) / Object.values(currentState.parties[partyId].constituencyPolling).length;
+        const previousAvg = (Object.values(previousState.parties[partyId].constituencyPolling) as number[])
+            .reduce((sum: number, val: number) => sum + val, 0) / Object.values(previousState.parties[partyId].constituencyPolling).length;
 
         return {
             partyId,
@@ -72,10 +72,10 @@ export const TurnSummary = ({ currentState, previousState, onContinue }: TurnSum
 
                 {/* Seat Projection Change */}
                 <div className={`p-5 rounded-xl mb-6 ${seatChange > 0
-                        ? 'bg-gradient-to-r from-green-900/40 to-emerald-900/40 border-2 border-green-500'
-                        : seatChange < 0
-                            ? 'bg-gradient-to-r from-red-900/40 to-orange-900/40 border-2 border-red-500'
-                            : 'bg-gradient-to-r from-slate-800/40 to-slate-700/40 border-2 border-slate-600'
+                    ? 'bg-gradient-to-r from-green-900/40 to-emerald-900/40 border-2 border-green-500'
+                    : seatChange < 0
+                        ? 'bg-gradient-to-r from-red-900/40 to-orange-900/40 border-2 border-red-500'
+                        : 'bg-gradient-to-r from-slate-800/40 to-slate-700/40 border-2 border-slate-600'
                     }`}>
                     <div className="flex items-center justify-between">
                         <div>
@@ -138,7 +138,7 @@ export const TurnSummary = ({ currentState, previousState, onContinue }: TurnSum
                     <div className="bg-slate-800/50 rounded-lg p-4 max-h-40 overflow-y-auto">
                         {recentEvents.length > 0 ? (
                             <ul className="space-y-2">
-                                {recentEvents.map((event, idx) => (
+                                {recentEvents.map((event: any, idx: number) => (
                                     <li key={idx} className="text-slate-300 text-sm flex items-start">
                                         <span className="text-blue-400 mr-2">•</span>
                                         {event}

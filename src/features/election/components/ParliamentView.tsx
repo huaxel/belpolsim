@@ -14,15 +14,15 @@ interface Law {
 }
 
 // Placeholder for AI vote decision
-const decideVote = (_partyId: PartyId, _gameState: GameState, _law: Law): 'FOR' | 'AGAINST' | 'ABSTAIN' => 'ABSTAIN';
+const decideVote = (_partyId: PartyId, _gameState: GameState, _law: any): 'FOR' | 'AGAINST' | 'ABSTAIN' => 'ABSTAIN';
 
 interface ParliamentViewProps {
     gameState: GameState;
-    onVote: (law: Law) => void;
+    onVote: (law: any) => void;
 }
 
 export const ParliamentView = ({ gameState, onVote }: ParliamentViewProps) => {
-    const { laws, parties } = gameState;
+    const { laws, parties } = gameState as { laws: Law[], parties: any };
 
     // Mock laws for proposal if none exist
     const availableLaws: Law[] = [
@@ -59,7 +59,7 @@ export const ParliamentView = ({ gameState, onVote }: ParliamentViewProps) => {
         const map = new Map<string, { yes: number, no: number, abstain: number, passed: boolean }>();
         proposedLaws.forEach(law => {
             let yes = 0, no = 0, abstain = 0;
-            Object.values(parties).forEach(party => {
+            Object.values(parties).forEach((party: any) => {
                 const vote = decideVote(party.id, gameState, law);
                 if (vote === 'FOR') yes += party.totalSeats;
                 else if (vote === 'AGAINST') no += party.totalSeats;
@@ -146,7 +146,7 @@ export const ParliamentView = ({ gameState, onVote }: ParliamentViewProps) => {
                         {/* We can iterate parties and show dots later */}
                     </div>
                     <div className="mt-4 flex flex-wrap justify-center gap-4">
-                        {Object.values(parties).map(party => (
+                        {Object.values(parties).map((party: any) => (
                             <div key={party.id} className="flex items-center gap-2">
                                 <div className={`w-3 h-3 rounded-full ${party.color}`}></div>
                                 <span className="text-xs text-slate-300">{party.name} ({party.totalSeats})</span>
