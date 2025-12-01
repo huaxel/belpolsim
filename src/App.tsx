@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { MainMenu } from './components/MainMenu';
-import { GameView } from './components/GameView';
+import { MainMenu, GameView } from '@/pages';
 
 const App = () => {
   const [view, setView] = useState<'menu' | 'game'>('menu');
