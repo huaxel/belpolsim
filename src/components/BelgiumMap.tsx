@@ -74,10 +74,9 @@ export const BelgiumMap = ({ gameState, onSelect }: BelgiumMapProps) => {
     };
 
     return (
-        <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Electoral Map</h3>
-            <div className="relative w-full aspect-[4/3]">
-                <svg viewBox="0 0 140 130" className="w-full h-full drop-shadow-lg">
+        <div className="w-full h-full flex flex-col items-center justify-center">
+            <div className="relative w-full aspect-[4/3] max-w-2xl">
+                <svg viewBox="0 0 140 130" className="w-full h-full drop-shadow-2xl">
                     {Object.entries(MAP_PATHS).map(([id, path]) => {
                         const cId = id as ConstituencyId;
                         const isSelected = gameState.selectedConstituency === cId;
@@ -88,13 +87,13 @@ export const BelgiumMap = ({ gameState, onSelect }: BelgiumMapProps) => {
                                 <path
                                     d={path}
                                     fill={fillColor}
-                                    stroke={isSelected ? "white" : "white"}
-                                    strokeWidth={isSelected ? "2" : "1"}
+                                    stroke={isSelected ? "#eab308" : "#1e293b"}
+                                    strokeWidth={isSelected ? "2" : "0.5"}
                                     className="transition-colors duration-300"
                                 />
                                 {/* Highlight effect for selection */}
                                 {isSelected && (
-                                    <path d={path} fill="none" stroke="black" strokeWidth="1" strokeDasharray="2,2" />
+                                    <path d={path} fill="none" stroke="#eab308" strokeWidth="1" strokeDasharray="2,2" />
                                 )}
                             </g>
                         );
@@ -110,11 +109,11 @@ export const BelgiumMap = ({ gameState, onSelect }: BelgiumMapProps) => {
                                 x={pos.x}
                                 y={pos.y}
                                 fontSize="3"
-                                fill={isSelected ? "black" : "white"}
+                                fill={isSelected ? "#000" : "#fff"}
                                 textAnchor="middle"
                                 pointerEvents="none"
                                 fontWeight="bold"
-                                style={{ textShadow: '0px 0px 2px rgba(0,0,0,0.5)' }}
+                                style={{ textShadow: '0px 0px 2px rgba(0,0,0,0.8)' }}
                             >
                                 {CONSTITUENCIES[cId].name.substring(0, 3).toUpperCase()}
                             </text>
@@ -122,7 +121,7 @@ export const BelgiumMap = ({ gameState, onSelect }: BelgiumMapProps) => {
                     })}
                 </svg>
             </div>
-            <div className="mt-4 text-center text-sm text-gray-500">
+            <div className="mt-4 text-center text-sm text-slate-500">
                 Click a region to view details and campaign.
             </div>
         </div>

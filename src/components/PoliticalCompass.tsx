@@ -27,21 +27,21 @@ export const PoliticalCompass: React.FC<PoliticalCompassProps> = ({ parties, pol
     };
 
     return (
-        <div className="bg-white p-6 rounded-2xl shadow-xl border border-indigo-100 flex flex-col items-center">
-            <h3 className="font-bold text-gray-700 text-lg border-b pb-2 mb-4 w-full text-center">Political Compass</h3>
+        <div className="bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-800 flex flex-col items-center">
+            <h3 className="font-bold text-slate-400 text-lg border-b border-slate-800 pb-2 mb-4 w-full text-center">Political Compass</h3>
             <div
-                className="relative border-2 border-gray-300 bg-gray-50"
+                className="relative border-2 border-slate-700 bg-slate-950"
                 style={{ width: `${width}px`, height: `${height}px` }}
             >
                 {/* Horizontal Axis (Economic: Left-Right) */}
-                <div className="absolute top-1/2 left-0 w-full h-px bg-gray-400"></div>
-                <div className="absolute top-1/2 left-0 transform -translate-y-1/2 -translate-x-full pr-2 text-sm text-gray-600">Left</div>
-                <div className="absolute top-1/2 right-0 transform -translate-y-1/2 translate-x-full pl-2 text-sm text-gray-600">Right</div>
+                <div className="absolute top-1/2 left-0 w-full h-px bg-slate-600"></div>
+                <div className="absolute top-1/2 left-0 transform -translate-y-1/2 -translate-x-full pr-2 text-sm text-slate-500">Left</div>
+                <div className="absolute top-1/2 right-0 transform -translate-y-1/2 translate-x-full pl-2 text-sm text-slate-500">Right</div>
 
                 {/* Vertical Axis (Social: Progressive-Conservative) */}
-                <div className="absolute left-1/2 top-0 h-full w-px bg-gray-400"></div>
-                <div className="absolute left-1/2 top-0 transform -translate-x-1/2 -translate-y-full pb-2 text-sm text-gray-600">Progressive</div>
-                <div className="absolute left-1/2 bottom-0 transform -translate-x-1/2 translate-y-full pt-2 text-sm text-gray-600">Conservative</div>
+                <div className="absolute left-1/2 top-0 h-full w-px bg-slate-600"></div>
+                <div className="absolute left-1/2 top-0 transform -translate-x-1/2 -translate-y-full pb-2 text-sm text-slate-500">Progressive</div>
+                <div className="absolute left-1/2 bottom-0 transform -translate-x-1/2 translate-y-full pt-2 text-sm text-slate-500">Conservative</div>
 
                 {/* Plot Parties */}
                 {parties.map(party => {
@@ -59,7 +59,7 @@ export const PoliticalCompass: React.FC<PoliticalCompassProps> = ({ parties, pol
                             }}
                             title={`${party.name} (E: ${party.ideology.economic}, S: ${party.ideology.social})`}
                         >
-                            <span className="absolute whitespace-nowrap -bottom-6 text-xs text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="absolute whitespace-nowrap -bottom-6 text-xs text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 px-2 py-1 rounded border border-slate-700 z-10">
                                 {party.name}
                             </span>
                         </div>
@@ -78,7 +78,7 @@ export const PoliticalCompass: React.FC<PoliticalCompassProps> = ({ parties, pol
                     return (
                         <div
                             key={politician.id}
-                            className={`absolute w-2 h-2 rounded-full border border-gray-600`}
+                            className={`absolute w-2 h-2 rounded-full border border-slate-500`}
                             style={{
                                 left: `${padding + x - 4}px`, // Smaller dot, slightly offset
                                 top: `${padding + y - 4 + (Math.random() * 10 - 5)}px`, // Small random offset to distinguish

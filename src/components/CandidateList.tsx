@@ -6,7 +6,7 @@ interface CandidateListProps {
 }
 
 export const CandidateList = ({ gameState }: CandidateListProps) => {
-    const candidates = gameState.parties.player.candidates[gameState.selectedConstituency] || [];
+    const candidates = gameState.parties.player.politicians[gameState.selectedConstituency] || [];
     return (
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
             <h3 className="font-bold mb-4">Candidates: {CONSTITUENCIES[gameState.selectedConstituency].name}</h3>

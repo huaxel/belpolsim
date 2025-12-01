@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { TrendingDown, Save, LogOut } from 'lucide-react';
 import { useGameLogic } from '../hooks/useGameLogic';
-import { Header } from './Header';
+import { Layout } from './Layout';
 import { BelgiumMap } from './BelgiumMap';
 import { PollingDashboard } from './PollingDashboard';
 import { ActionGrid } from './ActionGrid';
@@ -29,53 +29,57 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
         loadGame
     } = useGameLogic();
 
+    const [activeView, setActiveView] = useState('dashboard');
+
     useEffect(() => {
         if (shouldLoad) {
             loadGame();
         }
     }, [shouldLoad]);
 
-    return (
-        <div className="min-h-screen bg-gray-50 text-gray-800 font-sans p-4 md:p-8">
-            <div className="max-w-7xl mx-auto">
-
-                <div className="flex justify-between items-center mb-4">
-                    <Header gameState={gameState} />
-                    <div className="flex gap-2">
-                        <button onClick={saveGame} className="p-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200" title="Save Game">
-                            <Save size={20} />
-                        </button>
-                        <button onClick={onExit} className="p-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200" title="Exit to Menu">
-                            <LogOut size={20} />
-                        </button>
+    const renderContent = () => {
+        switch (activeView) {
+            case 'dashboard':
+                return (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="lg:col-span-2 space-y-6">
+                            {gameState.gamePhase === 'campaign' && (
+                                <ActionGrid onAction={handleAction} />
+                            )}
+                            <PollingDashboard gameState={gameState} />
+                        </div>
+                        <div className="space-y-6">
+                            <EventLog logs={gameState.eventLog} />
+                            <button
+                                onClick={endTurn}
+                                disabled={gameState.gamePhase !== 'campaign'}
+                                className="w-full py-4 bg-yellow-600 text-white font-bold rounded-xl shadow-lg hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center transition-all"
+                            >
+                                End Turn {gameState.turn} <TrendingDown className="ml-2" />
+                            </button>
+                        </div>
                     </div>
-                </div>
-
-                {gameState.currentEvent && (
-                    <EventModal event={gameState.currentEvent} onChoice={handleEventChoice} />
-                )}
-
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-                    {/* Left: Map/Selector */}
-                    <div className="lg:col-span-4 space-y-6">
-                        <BelgiumMap
-                            gameState={gameState}
-                            onSelect={setSelectedConstituency}
-                        />
-
-                        <PollingDashboard
-                            gameState={gameState}
-                        />
+                );
+            case 'map':
+                return (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+                        <div className="lg:col-span-2 bg-slate-900 rounded-xl p-4 border border-slate-800 shadow-inner flex flex-col">
+                            <h2 className="text-xl font-bold text-slate-200 mb-4">Electoral Map</h2>
+                            <div className="flex-1 flex items-center justify-center bg-slate-950/50 rounded-lg">
+                                <BelgiumMap
+                                    gameState={gameState}
+                                    onSelect={setSelectedConstituency}
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-6">
+                            <PollingDashboard gameState={gameState} />
+                        </div>
                     </div>
-                    {/* Center: Actions & Candidates */}
-                    <div className="lg:col-span-5 space-y-6">
-                        {/* Actions */}
-                        {gameState.gamePhase === 'campaign' && (
-                            <ActionGrid onAction={handleAction} />
-                        )}
-
-                        {/* Coalition UI */}
+                );
+            case 'parliament':
+                return (
+                    <div className="space-y-6">
                         {gameState.gamePhase === 'coalition_formation' && (
                             <CoalitionInterface
                                 gameState={gameState}
@@ -83,31 +87,46 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
                                 onFormGovernment={formGovernment}
                             />
                         )}
-
-                        {/* Government UI */}
                         {gameState.gamePhase === 'governing' && (
                             <GovernmentView gameState={gameState} />
                         )}
-
-                        {/* Candidates Profile (Player Career) */}
+                        {gameState.gamePhase === 'campaign' && (
+                            <div className="text-center p-12 text-slate-500">
+                                <h2 className="text-2xl font-bold mb-2">Parliament is currently dissolved</h2>
+                                <p>Elections will take place after the campaign.</p>
+                            </div>
+                        )}
+                    </div>
+                );
+            case 'party':
+                return (
+                    <div className="max-w-4xl mx-auto">
                         <CandidateProfile gameState={gameState} />
                     </div>
-
-                    {/* Right: Log & Global Stats */}
-                    <div className="lg:col-span-3 space-y-6">
-                        <EventLog logs={gameState.eventLog} />
-
-                        <button
-                            onClick={endTurn}
-                            disabled={gameState.gamePhase !== 'campaign'}
-                            className="w-full py-4 bg-gray-900 text-white font-bold rounded-xl shadow-lg hover:bg-gray-800 disabled:opacity-50 flex justify-center items-center"
-                        >
-                            End Turn {gameState.turn} <TrendingDown className="ml-2" />
+                );
+            case 'settings':
+                return (
+                    <div className="max-w-xl mx-auto space-y-4">
+                        <h2 className="text-2xl font-bold text-white mb-6">Game Settings</h2>
+                        <button onClick={saveGame} className="w-full p-4 bg-blue-600 text-white rounded-lg hover:bg-blue-500 flex items-center justify-center gap-2 font-bold">
+                            <Save size={20} /> Save Game
+                        </button>
+                        <button onClick={onExit} className="w-full p-4 bg-red-600 text-white rounded-lg hover:bg-red-500 flex items-center justify-center gap-2 font-bold">
+                            <LogOut size={20} /> Exit to Menu
                         </button>
                     </div>
+                );
+            default:
+                return <div>View not found</div>;
+        }
+    };
 
-                </div>
-            </div>
-        </div>
+    return (
+        <Layout state={gameState} activeView={activeView} onViewChange={setActiveView}>
+            {gameState.currentEvent && (
+                <EventModal event={gameState.currentEvent} onChoice={handleEventChoice} />
+            )}
+            {renderContent()}
+        </Layout>
     );
 };

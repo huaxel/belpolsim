@@ -12,7 +12,7 @@ export const CandidateProfile = ({ gameState }: CandidateProfileProps) => {
     const constituencyId = playerCharacter.homeConstituency;
 
     // Get candidates in home constituency
-    const candidates = playerParty.candidates[constituencyId] || [];
+    const candidates = playerParty.politicians[constituencyId] || [];
 
     // Sort by internal clout
     const sortedCandidates = [...candidates].sort((a, b) => b.internalClout - a.internalClout);
