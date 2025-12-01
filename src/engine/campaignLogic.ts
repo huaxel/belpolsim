@@ -185,7 +185,6 @@ export const calculateDemographicEffect = (
 
     if (targetDemographic) {
         // Targeted campaign: 2x effect on target group, 0.5x on others
-        const targetWeight = constituency.demographics[targetDemographic];
         const targetEffect = multipliers[targetDemographic] * 2.0;
 
         // Calculate weighted average
