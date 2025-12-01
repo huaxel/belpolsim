@@ -20,6 +20,8 @@ interface GameViewProps {
     onExit: () => void;
 }
 
+import { ToastProvider } from './ui/ToastProvider';
+
 export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
     const {
         gameState,
@@ -52,7 +54,7 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
         switch (activeView) {
             case 'dashboard':
                 return (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in duration-500">
                         <div className="lg:col-span-2 space-y-6">
                             {gameState.gamePhase === 'campaign' && (
                                 <ActionGrid onAction={handleAction} regionName={regionName} />
@@ -75,7 +77,7 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
                 );
             case 'map':
                 return (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full animate-in fade-in duration-500">
                         <div className="lg:col-span-2 bg-slate-900 rounded-xl p-4 border border-slate-800 shadow-inner flex flex-col">
                             <h2 className="text-xl font-bold text-slate-200 mb-4">Electoral Map</h2>
                             <div className="flex-1 flex items-center justify-center bg-slate-950/50 rounded-lg">
@@ -92,7 +94,7 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
                 );
             case 'parliament':
                 return (
-                    <div className="space-y-6">
+                    <div className="space-y-6 animate-in fade-in duration-500">
                         {gameState.gamePhase === 'consultation' && (
                             <KingsPalace gameState={gameState} onAction={dispatch} />
                         )}
@@ -116,13 +118,13 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
                 );
             case 'party':
                 return (
-                    <div className="max-w-4xl mx-auto h-[calc(100vh-120px)]">
+                    <div className="max-w-4xl mx-auto h-[calc(100vh-120px)] animate-in fade-in duration-500">
                         <PartyListEditor gameState={gameState} onReorder={reorderList} />
                     </div>
                 );
             case 'settings':
                 return (
-                    <div className="max-w-xl mx-auto space-y-4">
+                    <div className="max-w-xl mx-auto space-y-4 animate-in fade-in duration-500">
                         <h2 className="text-2xl font-bold text-white mb-6">Game Settings</h2>
                         <button onClick={saveGame} className="w-full p-4 bg-blue-600 text-white rounded-lg hover:bg-blue-500 flex items-center justify-center gap-2 font-bold">
                             <Save size={20} /> Save Game
@@ -138,14 +140,16 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
     };
 
     return (
-        <Layout state={gameState} activeView={activeView} onViewChange={setActiveView}>
-            {gameState.currentEvent && (
-                <EventModal event={gameState.currentEvent} onChoice={handleEventChoice} />
-            )}
-            {gameState.crises.length > 0 && (
-                <CrisisModal crisis={gameState.crises[0]} onResolve={resolveCrisis} />
-            )}
-            {renderContent()}
-        </Layout>
+        <ToastProvider>
+            <Layout state={gameState} activeView={activeView} onViewChange={setActiveView}>
+                {gameState.currentEvent && (
+                    <EventModal event={gameState.currentEvent} onChoice={handleEventChoice} />
+                )}
+                {gameState.crises.length > 0 && (
+                    <CrisisModal crisis={gameState.crises[0]} onResolve={resolveCrisis} />
+                )}
+                {renderContent()}
+            </Layout>
+        </ToastProvider>
     );
 };
