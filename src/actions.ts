@@ -1,4 +1,3 @@
-```typescript
 import type { ConstituencyId, PartyId, EventChoice, Law, Stance, DemographicGroup } from './types';
 
 export type ActionType =
