@@ -6,10 +6,14 @@ import { BelgiumMap } from './BelgiumMap';
 import { PollingDashboard } from './PollingDashboard';
 import { ActionGrid } from './ActionGrid';
 import { CoalitionInterface } from './CoalitionInterface';
-import { CandidateProfile } from './CandidateProfile';
+import { KingsPalace } from './KingsPalace';
 import { EventLog } from './EventLog';
 import { EventModal } from './EventModal';
-import { GovernmentView } from './GovernmentView';
+import { GovernmentDashboard } from './GovernmentDashboard';
+import { ParliamentView } from './ParliamentView';
+import { CrisisModal } from './CrisisModal';
+import { PartyListEditor } from './PartyListEditor';
+import { CONSTITUENCIES } from '../constants';
 
 interface GameViewProps {
     shouldLoad: boolean;
@@ -22,11 +26,15 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
         handleAction,
         endTurn,
         handleEventChoice,
-        toggleCoalitionPartner,
-        formGovernment,
         setSelectedConstituency,
         saveGame,
-        loadGame
+        loadGame,
+        dispatch,
+        toggleCoalitionPartner,
+        formGovernment,
+        reorderList,
+        resolveCrisis,
+        voteOnLegislation
     } = useGameLogic();
 
     const [activeView, setActiveView] = useState('dashboard');
@@ -38,13 +46,19 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
     }, [shouldLoad]);
 
     const renderContent = () => {
+        const region = CONSTITUENCIES[gameState.selectedConstituency].region;
+        const regionName = region === 'flanders' ? 'Flanders' : region === 'wallonia' ? 'Wallonia' : 'Brussels';
+
         switch (activeView) {
             case 'dashboard':
                 return (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div className="lg:col-span-2 space-y-6">
                             {gameState.gamePhase === 'campaign' && (
-                                <ActionGrid onAction={handleAction} />
+                                <ActionGrid onAction={handleAction} regionName={regionName} />
+                            )}
+                            {gameState.gamePhase === 'governing' && (
+                                <GovernmentDashboard gameState={gameState} />
                             )}
                             <PollingDashboard gameState={gameState} />
                         </div>
@@ -52,7 +66,6 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
                             <EventLog logs={gameState.eventLog} />
                             <button
                                 onClick={endTurn}
-                                disabled={gameState.gamePhase !== 'campaign'}
                                 className="w-full py-4 bg-yellow-600 text-white font-bold rounded-xl shadow-lg hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center transition-all"
                             >
                                 End Turn {gameState.turn} <TrendingDown className="ml-2" />
@@ -80,7 +93,10 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
             case 'parliament':
                 return (
                     <div className="space-y-6">
-                        {gameState.gamePhase === 'coalition_formation' && (
+                        {gameState.gamePhase === 'consultation' && (
+                            <KingsPalace gameState={gameState} onAction={dispatch} />
+                        )}
+                        {gameState.gamePhase === 'formation' && (
                             <CoalitionInterface
                                 gameState={gameState}
                                 onTogglePartner={toggleCoalitionPartner}
@@ -88,7 +104,7 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
                             />
                         )}
                         {gameState.gamePhase === 'governing' && (
-                            <GovernmentView gameState={gameState} />
+                            <ParliamentView gameState={gameState} onVote={voteOnLegislation} />
                         )}
                         {gameState.gamePhase === 'campaign' && (
                             <div className="text-center p-12 text-slate-500">
@@ -100,8 +116,8 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
                 );
             case 'party':
                 return (
-                    <div className="max-w-4xl mx-auto">
-                        <CandidateProfile gameState={gameState} />
+                    <div className="max-w-4xl mx-auto h-[calc(100vh-120px)]">
+                        <PartyListEditor gameState={gameState} onReorder={reorderList} />
                     </div>
                 );
             case 'settings':
@@ -125,6 +141,9 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
         <Layout state={gameState} activeView={activeView} onViewChange={setActiveView}>
             {gameState.currentEvent && (
                 <EventModal event={gameState.currentEvent} onChoice={handleEventChoice} />
+            )}
+            {gameState.crises.length > 0 && (
+                <CrisisModal crisis={gameState.crises[0]} onResolve={resolveCrisis} />
             )}
             {renderContent()}
         </Layout>
