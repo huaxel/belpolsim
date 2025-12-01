@@ -1,0 +1,26 @@
+# UI Verification Findings (v0.2.1)
+
+**Date:** 2025-12-01
+**Version:** v0.2.1 (Post-ECS Refactor Stabilization)
+
+## Summary
+The application loads successfully, but a critical error prevents the main game loop from starting.
+
+## Findings
+
+### 1. Initial Load
+- **Status:** ✅ Pass
+- **Observation:** The landing page loads correctly. "New Campaign" and "Load Game" buttons are visible and styled correctly.
+- **Screenshot:**
+![Initial Load](/Users/juanbenjumea/.gemini/antigravity/brain/fcc7f829-764d-4171-b82e-329de3b565f8/initial_load_view_1764627958129.png)
+
+### 2. New Campaign Flow
+### 2. New Campaign Flow
+- **Status:** ✅ Pass
+- **Observation:** Clicking "New Campaign" successfully loads the Campaign Dashboard.
+- **Resolution:** Fixed crash in `CampaignDashboard.tsx` where it was accessing an empty local stub instead of `gameState.constituencies`. Verified with unit tests.
+
+## Recommendations
+- Investigate `GameView.tsx` and its child components (`CampaignDashboard`, `BelgiumMap`) for runtime errors.
+- The error is likely due to a mismatch between the new ECS `GameState` and what the legacy components expect (accessed via `legacyState`).
+- Check for `undefined` property access in `CampaignDashboard`.
