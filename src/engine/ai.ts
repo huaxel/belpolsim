@@ -7,13 +7,8 @@ import type { Party } from '../types';
  * @returns A boolean indicating whether the party accepts the proposal.
  */
 export const decideToJoinCoalition = (party: Party, frictionScore: number): boolean => {
-    // As the Logic Engineer, I propose to the Systems Architect that we add
-    // a `negotiationThreshold` property to the `Party` type. This would allow
-    // for more varied AI personalities. For example, a pragmatic party might have
-    // a threshold of 60, while an ideologically rigid party might have a
-    // threshold of 35.
-    // For now, I will use a hard-coded constant.
-    const negotiationThreshold = 50;
+    // Use the party's specific negotiation threshold
+    const negotiationThreshold = party.negotiationThreshold || 50;
 
     // The AI makes a rational choice: if the political "cost" (friction) is
     // higher than their tolerance for compromise, they will reject the deal.

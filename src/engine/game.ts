@@ -64,7 +64,7 @@ const applyPollingChange = (state: GameState, constituencyId: ConstituencyId, pa
 
 // --- Action Implementations ---
 
-const performCanvas = (state: GameState): ActionResult => {
+export const performCanvas = (state: GameState): ActionResult => {
     const cost = 0;
     const energyCost = 2;
     const popularityGain = 1.5;
@@ -81,7 +81,7 @@ const performCanvas = (state: GameState): ActionResult => {
     return { newState, success: true, message: logMsg };
 }
 
-const performRally = (state: GameState): ActionResult => {
+export const performRally = (state: GameState): ActionResult => {
     const cost = 1200;
     const energyCost = 3;
     const cName = CONSTITUENCIES[state.selectedConstituency].name;
@@ -113,7 +113,7 @@ const performRally = (state: GameState): ActionResult => {
     return { newState, success: true, message: logMsg };
 }
 
-const performPosters = (state: GameState): ActionResult => {
+export const performPosters = (state: GameState): ActionResult => {
     const cost = 800;
     const energyCost = 1;
     const popularityGain = 2.0;
@@ -130,7 +130,7 @@ const performPosters = (state: GameState): ActionResult => {
     return { newState, success: true, message: logMsg };
 }
 
-const performFundraise = (state: GameState): ActionResult => {
+export const performFundraise = (state: GameState): ActionResult => {
     const cost = -1000; // Negative cost means budget gain
     const energyCost = 2;
     const popularityGain = -1.5;
@@ -163,7 +163,7 @@ const applyNationalPollingChange = (state: GameState, partyId: PartyId, change: 
     return newState;
 };
 
-const performTvAd = (state: GameState): ActionResult => {
+export const performTvAd = (state: GameState): ActionResult => {
     const cost = 3000;
     const energyCost = 0;
     const popularityGain = 0.5; // Small national boost
@@ -179,7 +179,7 @@ const performTvAd = (state: GameState): ActionResult => {
     return { newState, success: true, message: logMsg };
 }
 
-const performDebate = (state: GameState): ActionResult => {
+export const performDebate = (state: GameState): ActionResult => {
     const cost = 0;
     const energyCost = 3;
 
