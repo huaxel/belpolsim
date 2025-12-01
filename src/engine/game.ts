@@ -3,6 +3,7 @@ import { CONSTITUENCIES } from '../constants';
 import { EVENTS } from '../events';
 import { determineInformateur } from './consultation';
 import { calculateBudgetImpact, generateCrisis, checkGovernmentStability } from './governing';
+import { getRandomCampaignEvent } from './campaignEvents';
 import type { ActionType } from '../actions';
 
 export const applyPollingChange = (state: GameState, constituencyId: ConstituencyId, partyId: PartyId, change: number): GameState => {
@@ -314,9 +315,10 @@ const performAiMoves = (state: GameState): GameState => {
             // Apply polling change in the targeted constituency
             newState = applyPollingChange(newState, targetConstituency, aiId, boost);
 
-            if (Math.random() < 0.2) {
-                aiLogMessages.push(`${newState.parties[aiId].name} is campaigning hard in ${newState.constituencies[targetConstituency as ConstituencyId].name}!`);
-            }
+            // Always show AI moves for competitive pressure (playtester feedback)
+            const actions = ['TV ads', 'rallies', 'canvassing', 'poster campaign'];
+            const randomAction = actions[Math.floor(Math.random() * actions.length)];
+            aiLogMessages.push(`🤖 ${newState.parties[aiId].name} runs ${randomAction} in ${newState.constituencies[targetConstituency as ConstituencyId].name} (+${boost.toFixed(1)}%)`);
         }
     });
 
@@ -325,6 +327,21 @@ const performAiMoves = (state: GameState): GameState => {
 };
 
 const checkForRandomEvent = (state: GameState): GameState => {
+    // During campaign phase, use campaign-specific events
+    if (state.gamePhase === 'campaign') {
+        const campaignEvent = getRandomCampaignEvent();
+
+        if (campaignEvent) {
+            return {
+                ...state,
+                currentEvent: campaignEvent,
+                eventLog: [...state.eventLog, `🎲 EVENT: ${campaignEvent.title}`]
+            };
+        }
+        return state;
+    }
+
+    // For other phases, use generic events
     const eventRoll = Math.random();
     if (eventRoll > 0.85) {
         const randomEvent = EVENTS[Math.floor(Math.random() * EVENTS.length)];

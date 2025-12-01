@@ -26,7 +26,8 @@ export const MAJORITY_SEATS = 76;
 export const ELECTORAL_THRESHOLD = 5.0; // 5% threshold
 export const INITIAL_BUDGET = 5000;
 export const INITIAL_ENERGY = 5;
-export const MAX_WEEKS = 12;
+export const MAX_WEEKS = 8; // Reduced from 12 based on playtester feedback
+export const CAMPAIGN_EVENT_PROBABILITY = 0.25; // 25% chance per turn
 
 export const POLICIES = {
     wealth_tax: { id: 'wealth_tax', name: 'Wealth Tax', description: 'Implement a tax on large fortunes.' },
