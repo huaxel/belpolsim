@@ -71,12 +71,12 @@ export const useGameLogic = () => {
     }, [dispatch]);
 
     const endTurn = useCallback(() => {
-        if (gameState.week >= gameState.maxWeeks) {
+        if (gameState.turn >= gameState.maxTurns) {
             dispatch({ type: 'CALCULATE_ELECTION' });
         } else {
             dispatch({ type: 'END_TURN' });
         }
-    }, [dispatch, gameState.week, gameState.maxWeeks]);
+    }, [dispatch, gameState.turn, gameState.maxTurns]);
 
     const handleEventChoice = useCallback((choice: EventChoice) => {
         dispatch({ type: 'HANDLE_EVENT_CHOICE', payload: { choice } });

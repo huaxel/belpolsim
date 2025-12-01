@@ -19,15 +19,18 @@ export interface Constituency {
     seats: number;
 }
 
-export interface Candidate {
+export interface Politician {
     id: string;
     name: string;
+    partyId: PartyId;
+    language: Language;
+    constituency: ConstituencyId;
     isElected: boolean;
     charisma: number; // 1-10
     expertise: number; // 1-10
     internalClout: number; // 0-100, determines list position
-    language: Language;
-    partyId: PartyId;
+    popularity: number; // Used for preference votes
+    ministerialRole: string | null; // Position in government
 }
 
 export interface PlayerCharacter {
@@ -47,7 +50,7 @@ export interface Party {
     constituencyPolling: Record<ConstituencyId, number>;
     constituencySeats: Record<ConstituencyId, number>;
     totalSeats: number;
-    candidates: Record<ConstituencyId, Candidate[]>;
+    politicians: Record<ConstituencyId, Politician[]>; // Renamed from candidates
     negotiationThreshold: number; // 0-100, higher means more willing to compromise
 }
 
@@ -81,12 +84,22 @@ export interface GameEvent {
     choices: EventChoice[];
 }
 
+// --- Game Phase ---
+
+export type GamePhase = 'campaign' | 'election' | 'coalition_formation' | 'governing';
+
+// --- Parliament ---
+
+export interface Parliament {
+    seats: Politician[]; // Length should always be 150
+}
+
 // --- Government ---
 
 export interface Government {
     partners: PartyId[];
-    primeMinister: Candidate | null;
-    ministers: Candidate[];
+    primeMinister: Politician | null;
+    ministers: Politician[];
     agreement: Stance[];
     stability: number; // 0-100
 }
@@ -94,23 +107,23 @@ export interface Government {
 // --- Game State & Engine ---
 
 export interface GameState {
-    week: number;
-    maxWeeks: number;
+    turn: number; // Renamed from week
+    maxTurns: number; // Renamed from maxWeeks
+    gamePhase: GamePhase; // Replaces boolean flags
     budget: number;
     energy: number;
     maxEnergy: number;
 
     playerCharacter: PlayerCharacter;
     playerPartyId: PartyId;
-    isGameOver: boolean;
-    isCoalitionPhase: boolean;
-    isGoverning: boolean; // New phase
     coalitionPartners: PartyId[];
     selectedConstituency: ConstituencyId;
 
     parties: Record<PartyId, Party>;
+    constituencies: Record<ConstituencyId, Constituency>; // Added from constants
     issues: Record<IssueId, Issue>;
 
+    parliament: Parliament; // Added
     government: Government | null;
     nationalBudget: number; // Distinct from campaign budget
 

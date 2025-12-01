@@ -23,7 +23,7 @@ export const PollingDashboard = ({ gameState }: PollingDashboardProps) => {
                         <BarChart className="mr-2" size={20} />
                         Polling: <span className="ml-1 text-indigo-600 capitalize">{gameState.selectedConstituency.replace('_', ' ')}</span>
                     </h3>
-                    <span className="text-xs font-bold bg-gray-100 px-2 py-1 rounded text-gray-500">Week {gameState.week}</span>
+                    <span className="text-xs font-bold bg-gray-100 px-2 py-1 rounded text-gray-500">Turn {gameState.turn}</span>
                 </div>
 
                 <div className="space-y-3">

@@ -7,7 +7,7 @@ import type { ActionType } from '../actions';
 
 const applyPollingChange = (state: GameState, constituencyId: ConstituencyId, partyId: PartyId, change: number): GameState => {
     const newState = JSON.parse(JSON.stringify(state)); // Deep copy for safety
-    
+
     if (!newState.parties[partyId].eligibleConstituencies.includes(constituencyId)) {
         return state; // Return original state if action is not applicable
     }
@@ -55,12 +55,12 @@ const performCanvas = (state: GameState): ActionResult => {
     const logMsg = `Canvassing in ${cName} secured voters.`;
 
     if (state.budget < cost || state.energy < energyCost) return { newState: state, success: false, message: "Not enough resources." };
-    
+
     let newState = applyPollingChange(state, state.selectedConstituency, 'player', popularityGain);
     newState.budget -= cost;
     newState.energy -= energyCost;
-    newState.eventLog = [...newState.eventLog, `Week ${newState.week}: ${logMsg}`];
-    
+    newState.eventLog = [...newState.eventLog, `Week ${newState.turn}: ${logMsg}`];
+
     return { newState, success: true, message: logMsg };
 }
 
@@ -71,7 +71,7 @@ const performRally = (state: GameState): ActionResult => {
 
     if (state.budget < cost || state.energy < energyCost) return { newState: state, success: false, message: "Not enough resources." };
 
-    const leadCandidate = (state.parties['player'].candidates[state.selectedConstituency] || [])[0];
+    const leadCandidate = (state.parties['player'].politicians[state.selectedConstituency] || [])[0];
     const avgCharisma = leadCandidate ? leadCandidate.charisma : 5;
     const charismaMod = avgCharisma / 5;
     const isGaffe = Math.random() < (0.2 / charismaMod);
@@ -87,11 +87,11 @@ const performRally = (state: GameState): ActionResult => {
         popularityGain = baseGain * charismaMod;
         logMsg = `Huge rally in ${cName}! ${leadCandidate?.name} (Cha: ${leadCandidate?.charisma}) electrified the crowd.`;
     }
-    
+
     let newState = applyPollingChange(state, state.selectedConstituency, 'player', popularityGain);
     newState.budget -= cost;
     newState.energy -= energyCost;
-    newState.eventLog = [...newState.eventLog, `Week ${newState.week}: ${logMsg}`];
+    newState.eventLog = [...newState.eventLog, `Week ${newState.turn}: ${logMsg}`];
 
     return { newState, success: true, message: logMsg };
 }
@@ -104,12 +104,12 @@ const performPosters = (state: GameState): ActionResult => {
     const logMsg = `Posters plastered all over ${cName}.`;
 
     if (state.budget < cost || state.energy < energyCost) return { newState: state, success: false, message: "Not enough resources." };
-    
+
     let newState = applyPollingChange(state, state.selectedConstituency, 'player', popularityGain);
     newState.budget -= cost;
     newState.energy -= energyCost;
-    newState.eventLog = [...newState.eventLog, `Week ${newState.week}: ${logMsg}`];
-    
+    newState.eventLog = [...newState.eventLog, `Week ${newState.turn}: ${logMsg}`];
+
     return { newState, success: true, message: logMsg };
 }
 
@@ -122,12 +122,12 @@ const performFundraise = (state: GameState): ActionResult => {
 
     // Note: No budget check needed for fundraising
     if (state.energy < energyCost) return { newState: state, success: false, message: "Not enough energy." };
-    
+
     let newState = applyPollingChange(state, state.selectedConstituency, 'player', popularityGain);
     newState.budget -= cost;
     newState.energy -= energyCost;
-    newState.eventLog = [...newState.eventLog, `Week ${newState.week}: ${logMsg}`];
-    
+    newState.eventLog = [...newState.eventLog, `Week ${newState.turn}: ${logMsg}`];
+
     return { newState, success: true, message: logMsg };
 }
 
@@ -153,12 +153,12 @@ const performTvAd = (state: GameState): ActionResult => {
     const logMsg = `National TV Ad Campaign aired!`;
 
     if (state.budget < cost || state.energy < energyCost) return { newState: state, success: false, message: "Not enough resources." };
-    
+
     let newState = applyNationalPollingChange(state, 'player', popularityGain);
     newState.budget -= cost;
     newState.energy -= energyCost;
-    newState.eventLog = [...newState.eventLog, `Week ${newState.week}: ${logMsg}`];
-    
+    newState.eventLog = [...newState.eventLog, `Week ${newState.turn}: ${logMsg}`];
+
     return { newState, success: true, message: logMsg };
 }
 
@@ -167,11 +167,11 @@ const performDebate = (state: GameState): ActionResult => {
     const energyCost = 3;
 
     if (state.budget < cost || state.energy < energyCost) return { newState: state, success: false, message: "Not enough resources." };
-    
+
     let totalExpertise = 0;
     let candidateCount = 0;
-    Object.values(state.parties['player'].candidates).forEach(list => {
-        list.forEach(c => {
+    Object.values(state.parties['player'].politicians).forEach(list => {
+        list.forEach((c: any) => {
             totalExpertise += c.expertise;
             candidateCount++;
         });
@@ -194,11 +194,11 @@ const performDebate = (state: GameState): ActionResult => {
         gain = 0.5;
         logMsg = "Solid debate performance.";
     }
-    
+
     let newState = applyNationalPollingChange(state, 'player', gain);
     newState.budget -= cost;
     newState.energy -= energyCost;
-    newState.eventLog = [...newState.eventLog, `Week ${newState.week}: ${logMsg}`];
+    newState.eventLog = [...newState.eventLog, `Week ${newState.turn}: ${logMsg}`];
 
     return { newState, success: true, message: logMsg };
 }
@@ -238,16 +238,16 @@ const performAiMoves = (state: GameState): GameState => {
             const targetIndex = Math.floor(Math.random() * eligible.length);
             const targetConstituency = eligible[targetIndex];
             const boost = (Math.random() * 2.0) + 0.5; // AI gets a small boost
-            
+
             // Apply polling change in the targeted constituency
             newState = applyPollingChange(newState, targetConstituency, aiId, boost);
 
             if (Math.random() < 0.2) {
-                aiLogMessages.push(`${newState.parties[aiId].name} is campaigning hard in ${CONSTITUENCIES[targetConstituency].name}!`);
+                aiLogMessages.push(`${newState.parties[aiId].name} is campaigning hard in ${newState.constituencies[targetConstituency as ConstituencyId].name}!`);
             }
         }
     });
-    
+
     newState.eventLog = [...newState.eventLog, ...aiLogMessages];
     return newState;
 };
@@ -267,7 +267,7 @@ const checkForRandomEvent = (state: GameState): GameState => {
 
 
 export const endTurn = (state: GameState): GameState => {
-    if (state.week >= state.maxWeeks) {
+    if (state.turn >= state.maxTurns) {
         return state;
     }
 
@@ -278,9 +278,9 @@ export const endTurn = (state: GameState): GameState => {
 
     // 2. Check for random events
     newState = checkForRandomEvent(newState);
-    
-    // 3. Update week and resources
-    newState.week += 1;
+
+    // 3. Update turn and resources
+    newState.turn += 1;
     newState.energy = newState.maxEnergy;
 
     return newState;

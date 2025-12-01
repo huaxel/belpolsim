@@ -12,7 +12,7 @@ export const Header = ({ gameState }: HeaderProps) => {
                 <div className="bg-gray-900 text-white p-2 rounded-lg"><Calendar size={20} /></div>
                 <div>
                     <h1 className="font-bold text-lg leading-tight">Belgian Election Sim</h1>
-                    <p className="text-xs text-gray-500">Week {gameState.week} / {gameState.maxWeeks}</p>
+                    <p className="text-xs text-gray-500">Turn {gameState.turn} / {gameState.maxTurns}</p>
                 </div>
             </div>
             <div className="flex space-x-6">

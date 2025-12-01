@@ -1,5 +1,5 @@
 import { CONSTITUENCIES, ELECTORAL_THRESHOLD, MAJORITY_SEATS } from "../constants";
-import type { GameState, PartyId, ConstituencyId, Candidate } from "../types";
+import type { GameState, PartyId, ConstituencyId, Politician } from "../types";
 
 export const calculateElection = (state: GameState): GameState => {
     // Deep copy parties to avoid mutating the previous state
@@ -34,13 +34,19 @@ export const calculateElection = (state: GameState): GameState => {
         }
     });
 
+    // Collect all elected politicians for parliament
+    const allElectedPoliticians: Politician[] = [];
+
     partyIds.forEach(id => {
         let sum = 0;
         cIds.forEach(c => {
             const seats = parties[id].constituencySeats[c];
             sum += seats;
-            (parties[id].candidates as Record<ConstituencyId, Candidate[]>)[c].forEach((cand: Candidate, idx: number) => {
-                if (idx < seats) cand.isElected = true;
+            (parties[id].politicians as Record<ConstituencyId, Politician[]>)[c].forEach((politician: Politician, idx: number) => {
+                if (idx < seats) {
+                    politician.isElected = true;
+                    allElectedPoliticians.push(politician);
+                }
             });
         });
         parties[id].totalSeats = sum;
@@ -51,9 +57,9 @@ export const calculateElection = (state: GameState): GameState => {
 
     return {
         ...state,
-        isGameOver: hasMajority,
-        isCoalitionPhase: !hasMajority,
+        gamePhase: hasMajority ? 'governing' : 'coalition_formation',
         parties: parties,
+        parliament: { seats: allElectedPoliticians },
         eventLog: [...state.eventLog, `ELECTION OVER! You won ${playerSeats} seats. Majority needed: ${MAJORITY_SEATS}.`]
     };
 }

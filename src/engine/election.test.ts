@@ -6,7 +6,8 @@ describe('calculateElection', () => {
     it('should calculate the election results correctly', () => {
         const initialState = createInitialState();
         const finalState = calculateElection(initialState);
-        expect(finalState.isCoalitionPhase).toBe(true);
+        expect(finalState.gamePhase).toBe('coalition_formation');
         expect(finalState.parties.player.totalSeats).toBeGreaterThan(0);
+        expect(finalState.parliament.seats.length).toBe(150);
     });
 });

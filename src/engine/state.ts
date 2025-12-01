@@ -5,7 +5,8 @@ import {
     MAX_WEEKS,
 } from '../constants';
 import type {
-    Candidate,
+    Politician,
+    Constituency,
     ConstituencyId,
     GameState,
     Party,
@@ -17,17 +18,20 @@ import type {
     Language,
 } from '../types';
 
-// --- Helper: Generate Initial Polling & Candidates ---
-const generateCandidates = (partyId: PartyId, constituencyId: ConstituencyId, count: number, language: Language): Candidate[] => {
+// --- Helper: Generate Initial Politicians ---
+const generatePoliticians = (partyId: PartyId, constituencyId: ConstituencyId, count: number, language: Language): Politician[] => {
     return Array.from({ length: count }).map((_, i) => ({
         id: `${partyId}-${constituencyId}-${i}`,
-        name: `${partyId.toUpperCase()} Candidate ${i + 1}`,
+        name: `${partyId.toUpperCase()} Politician ${i + 1}`,
+        partyId,
+        language,
+        constituency: constituencyId,
         isElected: false,
         charisma: Math.floor(Math.random() * 10) + 1,
         expertise: Math.floor(Math.random() * 10) + 1,
         internalClout: Math.floor(Math.random() * 100),
-        language,
-        partyId,
+        popularity: Math.floor(Math.random() * 100), // New field
+        ministerialRole: null, // New field
     }));
 };
 
@@ -49,17 +53,17 @@ const initParty = (
 
     const polling: Record<string, number> = {};
     const seats: Record<string, number> = {};
-    const candidates: Record<string, Candidate[]> = {};
+    const politicians: Record<string, Politician[]> = {};
 
     constituencyIds.forEach(c => {
         polling[c] = eligibleC.includes(c) ? basePolling : 0;
         seats[c] = 0;
         if (eligibleC.includes(c)) {
-            // For Brussels, assume mixed candidates for now. This is a simplification.
-            const candidateLang = c === 'brussels_capital' ? (Math.random() > 0.5 ? 'dutch' : 'french') : language;
-            candidates[c] = generateCandidates(id, c, CONSTITUENCIES[c].seats, candidateLang);
+            // For Brussels, assume mixed politicians for now. This is a simplification.
+            const politicianLang = c === 'brussels_capital' ? (Math.random() > 0.5 ? 'dutch' : 'french') : language;
+            politicians[c] = generatePoliticians(id, c, CONSTITUENCIES[c].seats, politicianLang);
         } else {
-            candidates[c] = [];
+            politicians[c] = [];
         }
     });
 
@@ -69,7 +73,7 @@ const initParty = (
         constituencyPolling: polling as Record<ConstituencyId, number>,
         constituencySeats: seats as Record<ConstituencyId, number>,
         totalSeats: 0,
-        candidates: candidates as Record<ConstituencyId, Candidate[]>,
+        politicians: politicians as Record<ConstituencyId, Politician[]>,
         negotiationThreshold
     };
 };
@@ -92,8 +96,9 @@ export const createInitialState = (): GameState => {
     };
 
     const initialState: GameState = {
-        week: 1,
-        maxWeeks: MAX_WEEKS,
+        turn: 1,
+        maxTurns: MAX_WEEKS,
+        gamePhase: 'campaign',
         budget: INITIAL_BUDGET,
         energy: INITIAL_ENERGY,
         maxEnergy: INITIAL_ENERGY,
@@ -103,11 +108,10 @@ export const createInitialState = (): GameState => {
             internalClout: 50
         },
         playerPartyId: 'player',
-        isGameOver: false,
-        isCoalitionPhase: false,
-        isGoverning: false,
         coalitionPartners: [],
         selectedConstituency: 'antwerp',
+        constituencies: CONSTITUENCIES,
+        parliament: { seats: [] },
         government: null,
         nationalBudget: 0,
         parties: {

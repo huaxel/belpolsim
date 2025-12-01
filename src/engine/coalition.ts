@@ -1,4 +1,4 @@
-import type { GameState, PartyId, Stance, Candidate, ActionResult } from '../types';
+import type { GameState, PartyId, Stance, Politician, ActionResult } from '../types';
 
 export const toggleCoalitionPartner = (state: GameState, partnerId: PartyId): ActionResult => {
     const partner = state.parties[partnerId];
@@ -54,20 +54,20 @@ export const formGovernment = (
     // This is a simplification.
 
     // --- Real Minister Assignment Logic ---
-    const ministers: any[] = []; // Should be Candidate[]
+    const ministers: Politician[] = [];
 
-    // We need to pick actual candidates to be ministers.
-    // For MVP, we'll just pick the first N candidates from the party's lists.
+    // We need to pick actual politicians to be ministers.
+    // For MVP, we'll just pick the first N politicians from the party's lists.
     Object.entries(proposalPayload.ministriesOffered).forEach(([partyId, count]) => {
         const party = state.parties[partyId as PartyId];
         let assignedCount = 0;
 
-        // Iterate through constituencies to find candidates
+        // Iterate through constituencies to find politicians
         for (const constituencyId of party.eligibleConstituencies) {
-            const candidates = party.candidates[constituencyId];
-            for (const candidate of candidates) {
+            const politicians = party.politicians[constituencyId];
+            for (const politician of politicians) {
                 if (assignedCount < count) {
-                    ministers.push(candidate);
+                    ministers.push(politician);
                     assignedCount++;
                 } else {
                     break;
@@ -93,9 +93,7 @@ export const formGovernment = (
         return {
             newState: {
                 ...state,
-                isGameOver: false, // Game continues!
-                isCoalitionPhase: false,
-                isGoverning: true,
+                gamePhase: 'governing',
                 government: {
                     partners: proposalPayload.partners,
                     primeMinister: null, // To be implemented

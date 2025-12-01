@@ -71,12 +71,12 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
                     {/* Center: Actions & Candidates */}
                     <div className="lg:col-span-5 space-y-6">
                         {/* Actions */}
-                        {!gameState.isGameOver && !gameState.isCoalitionPhase && !gameState.isGoverning && (
+                        {gameState.gamePhase === 'campaign' && (
                             <ActionGrid onAction={handleAction} />
                         )}
 
                         {/* Coalition UI */}
-                        {gameState.isCoalitionPhase && (
+                        {gameState.gamePhase === 'coalition_formation' && (
                             <CoalitionInterface
                                 gameState={gameState}
                                 onTogglePartner={toggleCoalitionPartner}
@@ -85,7 +85,7 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
                         )}
 
                         {/* Government UI */}
-                        {gameState.isGoverning && (
+                        {gameState.gamePhase === 'governing' && (
                             <GovernmentView gameState={gameState} />
                         )}
 
@@ -99,10 +99,10 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
 
                         <button
                             onClick={endTurn}
-                            disabled={gameState.isGameOver || gameState.isCoalitionPhase}
+                            disabled={gameState.gamePhase !== 'campaign'}
                             className="w-full py-4 bg-gray-900 text-white font-bold rounded-xl shadow-lg hover:bg-gray-800 disabled:opacity-50 flex justify-center items-center"
                         >
-                            End Week {gameState.week} <TrendingDown className="ml-2" />
+                            End Turn {gameState.turn} <TrendingDown className="ml-2" />
                         </button>
                     </div>
 
