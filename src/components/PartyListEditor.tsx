@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Users, ArrowUp, ArrowDown, Star, Award, TrendingUp } from 'lucide-react';
-import type { GameState, ConstituencyId, Politician } from '../types';
+import type { GameState, ConstituencyId } from '../types';
 import { CONSTITUENCIES } from '../constants';
 
 interface PartyListEditorProps {

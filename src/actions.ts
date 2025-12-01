@@ -38,7 +38,7 @@ export type Action =
     }
     | { type: 'SET_SELECTED_CONSTITUENCY', payload: { constituencyId: ConstituencyId } }
     | { type: 'SAVE_GAME' }
-    | { type: 'LOAD_GAME' }
+    | { type: 'LOAD_GAME', payload?: any } // Allow payload for state updates
     | { type: 'CALCULATE_ELECTION' }
     | { type: 'MEET_THE_KING' }
     | { type: 'REORDER_LIST', payload: { constituencyId: ConstituencyId, politicianId: string, newIndex: number } }

@@ -26,8 +26,11 @@ Before writing code, we align on the objective.
 
 ### Phase 2: Planning
 1.  **Create Plan:** Generate `implementation_plan.md`.
-2.  **Architecture Check:** Systems Architect reviews if new types are needed.
-3.  **UX/Narrative Check:** Product Manager & Frontend Specialist define the "flow" and "tone" before logic is written.
+2.  **Versioning:**
+    -   Create a new version doc: `planning/vX.Y.Z-[feature_name].md`.
+    -   Update `planning/version-summary.md` with the new version entry (Status: In Progress).
+3.  **Architecture Check:** Systems Architect reviews if new types are needed.
+4.  **UX/Narrative Check:** Product Manager & Frontend Specialist define the "flow" and "tone" before logic is written.
 
 ### Phase 3: Execution
 1.  **Foundation:** Systems Architect updates `types.ts` and `state.ts`.

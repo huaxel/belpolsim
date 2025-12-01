@@ -120,8 +120,12 @@ export const formGovernment = (
         language: 'dutch',
         listPosition: 1,
         popularity: 50,
-        expertise: [],
-        traits: []
+        expertise: 5,
+        internalClout: 50,
+        isElected: true,
+        originalListPosition: 1,
+        ministerialRole: null,
+        charisma: 5
     };
 
     const proposal = {

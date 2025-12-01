@@ -5,7 +5,7 @@
  * Events are triggered with CAMPAIGN_EVENT_PROBABILITY chance each turn.
  */
 
-import type { GameEvent, GameState, PartyId } from '../types';
+import type { GameEvent, GameState } from '../types';
 
 /**
  * Campaign-specific random events

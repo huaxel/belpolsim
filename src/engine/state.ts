@@ -228,6 +228,7 @@ export const createInitialState = (): GameState => {
         },
         crises: [],
         laws: [],
+        bills: [],
         publicApproval: 50,
         parties: {
             player: initParty('player', 'Ecolo-Groen (You)', 'bg-green-600', false, ['flanders', 'wallonia', 'brussels'], 12, { economic: -6, social: -7 }, [

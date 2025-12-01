@@ -299,6 +299,14 @@ export interface Crisis {
     turnsRemaining: number;
 }
 
+export interface Bill {
+    id: string;
+    issueId: IssueId;
+    targetPosition: number;
+    proposedBy: PartyId;
+    status: 'draft' | 'voting' | 'passed' | 'rejected';
+}
+
 export interface Law {
     id: string;
     name: string;
@@ -343,6 +351,7 @@ export interface GameState {
     nationalBudget: NationalBudget; // Replaced number with object
     crises: Crisis[];
     laws: Law[];
+    bills: Bill[]; // Active bills in parliament
     publicApproval: number; // 0-100
 
     eventLog: string[];

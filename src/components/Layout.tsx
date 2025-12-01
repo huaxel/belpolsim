@@ -12,7 +12,7 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children, state, activeView, onViewChange }) => {
     return (
-        <div className="flex h-screen bg-slate-950 text-slate-50 overflow-hidden">
+        <div className="flex h-screen overflow-hidden">
             <Sidebar activeView={activeView} onViewChange={onViewChange} />
 
             <div className="flex-1 flex flex-col min-w-0">

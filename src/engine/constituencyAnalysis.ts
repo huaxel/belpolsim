@@ -10,7 +10,6 @@
 
 import type { GameState, ConstituencyId, PartyId } from '../types';
 import { CONSTITUENCIES } from '../constants';
-import { calculateSeatProjections } from './seatProjection';
 
 export type ConstituencyImportance = 'critical' | 'competitive' | 'safe' | 'lost';
 

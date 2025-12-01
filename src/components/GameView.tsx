@@ -13,7 +13,6 @@ import { GovernmentDashboard } from './GovernmentDashboard';
 import { ParliamentView } from './ParliamentView';
 import { CrisisModal } from './CrisisModal';
 import { PartyListEditor } from './PartyListEditor';
-import { CONSTITUENCIES } from '../constants';
 
 interface GameViewProps {
     shouldLoad: boolean;
@@ -67,7 +66,10 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
                                 />
                             )}
                             {gameState.gamePhase === 'governing' && (
-                                <GovernmentDashboard gameState={gameState} />
+                                <GovernmentDashboard
+                                    gameState={gameState}
+                                    onUpdateState={(newState) => dispatch({ type: 'LOAD_GAME', payload: newState })}
+                                />
                             )}
                             <PollingDashboard gameState={gameState} />
                         </div>
@@ -75,7 +77,7 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
                             <EventLog logs={gameState.eventLog} />
                             <button
                                 onClick={endTurn}
-                                className="w-full py-4 bg-yellow-600 text-white font-bold rounded-xl shadow-lg hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center transition-all"
+                                className="w-full py-4 btn-primary shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center transition-all"
                             >
                                 End Turn {gameState.turn} <TrendingDown className="ml-2" />
                             </button>
@@ -85,9 +87,9 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
             case 'map':
                 return (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full animate-in fade-in duration-500">
-                        <div className="lg:col-span-2 bg-slate-900 rounded-xl p-4 border border-slate-800 shadow-inner flex flex-col">
-                            <h2 className="text-xl font-bold text-slate-200 mb-4">Electoral Map</h2>
-                            <div className="flex-1 flex items-center justify-center bg-slate-950/50 rounded-lg">
+                        <div className="lg:col-span-2 card flex flex-col">
+                            <h2 className="text-xl font-bold mb-4">Electoral Map</h2>
+                            <div className="flex-1 flex items-center justify-center bg-black/5 rounded-lg">
                                 <BelgiumMap
                                     gameState={gameState}
                                     onSelect={setSelectedConstituency}
@@ -133,10 +135,10 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
                 return (
                     <div className="max-w-xl mx-auto space-y-4 animate-in fade-in duration-500">
                         <h2 className="text-2xl font-bold text-white mb-6">Game Settings</h2>
-                        <button onClick={saveGame} className="w-full p-4 bg-blue-600 text-white rounded-lg hover:bg-blue-500 flex items-center justify-center gap-2 font-bold">
+                        <button onClick={saveGame} className="w-full p-4 btn-primary flex items-center justify-center gap-2 font-bold">
                             <Save size={20} /> Save Game
                         </button>
-                        <button onClick={onExit} className="w-full p-4 bg-red-600 text-white rounded-lg hover:bg-red-500 flex items-center justify-center gap-2 font-bold">
+                        <button onClick={onExit} className="w-full p-4 btn-danger flex items-center justify-center gap-2 font-bold">
                             <LogOut size={20} /> Exit to Menu
                         </button>
                     </div>

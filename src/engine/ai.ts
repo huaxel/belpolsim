@@ -39,7 +39,7 @@ export const evaluateCoalitionOffer = (
 
     // 2. Power Score (Ministries)
     // How many ministries are we getting vs our seat share?
-    const totalSeats = Object.values(state.parties).reduce((sum, p) => sum + p.totalSeats, 0);
+    // const totalSeats = Object.values(state.parties).reduce((sum, p) => sum + p.totalSeats, 0);
     const coalitionSeats = proposal.partners.reduce((sum, pid) => sum + state.parties[pid].totalSeats, 0);
     const ourSeats = party.totalSeats;
     const ourSeatShareInCoalition = ourSeats / coalitionSeats;
@@ -86,7 +86,7 @@ export const evaluateCoalitionOffer = (
 export const decideVote = (
     partyId: PartyId,
     state: GameState,
-    law: Law
+    _law: Law
 ): 'FOR' | 'AGAINST' | 'ABSTAIN' => {
     const party = state.parties[partyId];
     if (!party) return 'ABSTAIN';

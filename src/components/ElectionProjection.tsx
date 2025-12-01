@@ -6,7 +6,7 @@
  */
 
 import { useState } from 'react';
-import { BarChart3, Users, AlertCircle, CheckCircle, X } from 'lucide-react';
+import { BarChart3, Users, AlertCircle, CheckCircle } from 'lucide-react';
 import type { GameState } from '../types';
 import { calculateSeatProjections, getCoalitionPossibilities } from '../engine/seatProjection';
 import { MAJORITY_SEATS, TOTAL_SEATS } from '../constants';
@@ -42,8 +42,8 @@ export const ElectionProjection = ({ gameState, onProceed }: ElectionProjectionP
 
                 {/* Main Projection */}
                 <div className={`p-6 rounded-xl mb-6 ${hasMajority
-                        ? 'bg-gradient-to-r from-green-900/40 to-emerald-900/40 border-2 border-green-500'
-                        : 'bg-gradient-to-r from-orange-900/40 to-red-900/40 border-2 border-orange-500'
+                    ? 'bg-gradient-to-r from-green-900/40 to-emerald-900/40 border-2 border-green-500'
+                    : 'bg-gradient-to-r from-orange-900/40 to-red-900/40 border-2 border-orange-500'
                     }`}>
                     <div className="flex items-center justify-between">
                         <div>

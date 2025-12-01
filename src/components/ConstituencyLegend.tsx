@@ -4,13 +4,13 @@
  * Shows what the constituency highlighting colors mean
  */
 
-import { AlertCircle, Target, CheckCircle, XCircle } from 'lucide-react';
+import { Info } from 'lucide-react';
 
 export const ConstituencyLegend = () => {
     return (
         <div className="bg-slate-800 rounded-lg p-4 border border-slate-700">
             <h3 className="text-white font-bold text-sm mb-3 flex items-center">
-                <Target size={16} className="mr-2" />
+                <Info size={16} className="mr-2" />
                 Constituency Importance
             </h3>
 

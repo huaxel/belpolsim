@@ -6,8 +6,7 @@
  * 2. Informateur's Mission: Finding a viable coalition.
  */
 
-import type { GameState, PartyId, Party, Stance, IssueId } from '../types';
-import { MAJORITY_SEATS } from '../constants';
+import type { GameState, PartyId, Party, IssueId } from '../types';
 
 /**
  * Determines the Informateur based on election results.

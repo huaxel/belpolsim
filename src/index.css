@@ -1,32 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-background: #0f172a; /* Slate 900 */
-  --color-surface: #1e293b; /* Slate 800 */
-  --color-surface-hover: #334155; /* Slate 700 */
-  --color-primary: #eab308; /* Yellow 500 (Gold) */
-  --color-secondary: #3b82f6; /* Blue 500 */
-  --color-text-main: #f8fafc; /* Slate 50 */
-  --color-text-muted: #94a3b8; /* Slate 400 */
+  /* Elegant Bureaucracy Palette */
+  --color-cabinet-charcoal: #1A202C;
+  --color-royal-gold: #FDC12A;
+  --color-royal-gold-hover: #E6AF26;
+  --color-bureaucratic-cream: #F7FAFC;
+  --color-parliament-red: #E30613;
+  --color-stability-blue: #3182CE;
+  --color-ink-black: #111111;
+  --color-paper-shadow: rgba(0, 0, 0, 0.1);
+
+  /* Semantic Mappings */
+  --color-background: var(--color-cabinet-charcoal);
+  --color-surface: var(--color-bureaucratic-cream);
+  --color-primary: var(--color-royal-gold);
+  --color-text-main: var(--color-bureaucratic-cream);
+  /* Text on background */
+  --color-text-on-surface: var(--color-ink-black);
+  /* Text on cards */
+
   --font-sans: 'Inter', sans-serif;
+  --font-serif: 'Playfair Display', serif;
 }
 
 @layer base {
   body {
-    @apply bg-slate-950 text-slate-50 font-sans antialiased;
+    background-color: var(--color-background);
+    color: var(--color-text-main);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-serif);
   }
 }
 
 @layer components {
   .card {
-    @apply bg-slate-900 border border-slate-800 rounded-lg p-4 shadow-lg;
+    background-color: var(--color-surface);
+    color: var(--color-text-on-surface);
+    border: 1px solid #E2E8F0;
+    border-radius: 2px;
+    /* Sharp/Slightly rounded */
+    padding: 1rem;
+    box-shadow: 0 4px 6px -1px var(--color-paper-shadow), 0 2px 4px -1px var(--color-paper-shadow);
   }
-  
+
   .btn-primary {
-    @apply bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-2 px-4 rounded transition-colors;
+    background-color: var(--color-royal-gold);
+    color: var(--color-ink-black);
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 2px;
+    transition: background-color 0.2s;
+    font-family: var(--font-sans);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--color-royal-gold-hover);
   }
 
   .btn-secondary {
-    @apply bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded transition-colors;
+    background-color: transparent;
+    color: var(--color-bureaucratic-cream);
+    border: 1px solid var(--color-bureaucratic-cream);
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 2px;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .btn-secondary:hover {
+    background-color: rgba(247, 250, 252, 0.1);
+  }
+
+  .btn-danger {
+    background-color: var(--color-parliament-red);
+    color: white;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 2px;
+    transition: background-color 0.2s;
+    font-family: var(--font-sans);
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-danger:hover {
+    background-color: #c50511;
   }
 }

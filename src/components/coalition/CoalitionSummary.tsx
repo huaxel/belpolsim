@@ -1,5 +1,5 @@
 import { CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
-import { TOTAL_SEATS, MAJORITY_SEATS } from '../../constants';
+import { TOTAL_SEATS } from '../../constants';
 import type { PartyId } from '../../types';
 
 interface CoalitionSummaryProps {

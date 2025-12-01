@@ -16,10 +16,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange }) =>
     ];
 
     return (
-        <div className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col h-screen">
-            <div className="p-6 border-b border-slate-800">
-                <h1 className="text-xl font-bold text-yellow-500 tracking-wider">BELPOLSIM</h1>
-                <p className="text-xs text-slate-500 mt-1">Federal Campaign 2029</p>
+        <div className="w-64 bg-[var(--color-cabinet-charcoal)] border-r border-white/10 flex flex-col h-screen">
+            <div className="p-6 border-b border-white/10">
+                <h1 className="text-xl font-bold text-[var(--color-royal-gold)] tracking-wider font-serif">FORMATEUR</h1>
+                <p className="text-xs text-gray-400 mt-1">Federal Campaign 2029</p>
             </div>
 
             <nav className="flex-1 p-4 space-y-2">
@@ -30,9 +30,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange }) =>
                         <button
                             key={item.id}
                             onClick={() => onViewChange(item.id)}
-                            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive
-                                    ? 'bg-yellow-600/10 text-yellow-500 border-l-4 border-yellow-500'
-                                    : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-sm transition-all duration-200 ${isActive
+                                ? 'bg-[var(--color-royal-gold)]/10 text-[var(--color-royal-gold)] border-l-2 border-[var(--color-royal-gold)]'
+                                : 'text-gray-400 hover:bg-white/5 hover:text-white'
                                 }`}
                         >
                             <Icon size={20} />
@@ -42,9 +42,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange }) =>
                 })}
             </nav>
 
-            <div className="p-4 border-t border-slate-800">
-                <div className="bg-slate-800 rounded-lg p-3">
-                    <p className="text-xs text-slate-400 uppercase font-bold mb-2">Next Election</p>
+            <div className="p-4 border-t border-white/10">
+                <div className="bg-white/5 rounded-sm p-3">
+                    <p className="text-xs text-gray-400 uppercase font-bold mb-2">Next Election</p>
                     <div className="text-sm font-mono text-white">May 26, 2029</div>
                 </div>
             </div>
