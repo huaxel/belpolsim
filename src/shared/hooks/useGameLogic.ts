@@ -134,9 +134,14 @@ const gameReducer = (state: GameState, action: Action): GameState => {
             return result.newState;
         }
         case 'SET_SELECTED_CONSTITUENCY': {
-            // This is UI state, but if we want to store it in globals (if supported) or transientStatus
-            // For now, we ignore it as GameState doesn't have a field for it
-            return state;
+            const { constituencyId } = action.payload;
+            return {
+                ...state,
+                globals: {
+                    ...state.globals,
+                    selectedConstituency: constituencyId
+                }
+            };
         }
         case 'SAVE_GAME': {
             // TODO: Implement persistence

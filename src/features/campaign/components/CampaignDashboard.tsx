@@ -9,29 +9,20 @@
  */
 
 import { useState } from 'react';
-import { Target, Smartphone, Tv, Newspaper, Radio, Users, TrendingUp, DollarSign } from 'lucide-react';
-// import type { World, DemographicGroup } from '@/core';
-// import { campaignSystem } from '@/core';
+// Removed unused import
 
-// Type aliases for backwards compatibility
-type GameState = any; // World;
-type DemographicGroup = string;
-
-// Stubs for missing legacy exports
-
-const calculateCampaignEffect = (..._args: any[]) => ({
-    awarenessChange: 0,
-    favorabilityChange: 0,
-    enthusiasmChange: 0,
-    estimatedReach: 0,
-    costPerVote: 0
-});
-type ConstituencyId = string;
-type CampaignActionType = 'social_media' | 'tv_ad' | 'newspaper' | 'radio' | 'door_to_door' | 'rally';
+import { Target, Smartphone, Tv, Newspaper, Users, TrendingUp, DollarSign, Settings } from 'lucide-react';
+import type { GameState, EntityId, CampaignActionType } from '@/core';
+import {
+    getPartyStats,
+    getPartyResources,
+    getConstituencyData,
+    getPartyPoliticians,
+    getIdentity
+} from '@/core';
 
 import { CampaignRecommendations } from './CampaignRecommendations';
 import { AutoCampaignSettings } from './AutoCampaignSettings';
-import { Settings } from 'lucide-react';
 
 // AutoCampaignStrategy type for local use
 interface AutoCampaignStrategy {
@@ -47,9 +38,9 @@ interface AutoCampaignStrategy {
 
 interface CampaignDashboardProps {
     gameState: GameState;
-    selectedConstituency: ConstituencyId;
-    onPerformAction: (actionType: CampaignActionType, targetDemographic?: DemographicGroup) => void;
-    onSelectConstituency: (id: ConstituencyId) => void;
+    selectedConstituency: EntityId; // This is an ID now
+    onPerformAction: (actionType: CampaignActionType, targetDemographic?: string) => void;
+    onSelectConstituency: (id: EntityId) => void;
     onUpdateAutoCampaign: (settings: AutoCampaignStrategy) => void;
 }
 
@@ -60,40 +51,60 @@ export const CampaignDashboard = ({
     onSelectConstituency,
     onUpdateAutoCampaign
 }: CampaignDashboardProps) => {
-    const [actionType, setActionType] = useState<CampaignActionType>('social_media');
-    const [targetDemographic, setTargetDemographic] = useState<DemographicGroup | 'all'>('all');
+    const [actionType, setActionType] = useState<CampaignActionType>('doorToDoor');
+    const [targetDemographic, setTargetDemographic] = useState<string | 'all'>('all');
     const [showSettings, setShowSettings] = useState(false);
 
-    const constituency = gameState.constituencies?.[selectedConstituency] || {
-        name: 'Unknown Constituency',
-        seats: 0,
-        demographics: { youth: 0.25, retirees: 0.25, workers: 0.25, upper_class: 0.25 }
-    };
-    const currentStats = gameState.parties.player.campaignStats[selectedConstituency];
-    const leadCandidate = gameState.parties.player.politicians[selectedConstituency]?.[0];
+    const playerPartyId = gameState.globals.playerParty;
 
-    const actionCosts = {
-        social_media: 1000,
-        tv_ad: 5000,
-        newspaper: 2000,
-        radio: 1500,
-        door_to_door: 0,
-        rally: 1200
+    // Use Queries to get data
+    const constituencyData = getConstituencyData(gameState, selectedConstituency);
+    const constituencyName = getIdentity(gameState, selectedConstituency)?.name || 'Unknown';
+
+    const partyStats = getPartyStats(gameState, playerPartyId);
+    const partyResources = getPartyResources(gameState, playerPartyId);
+
+    // Safe access to campaign stats for this constituency
+    const currentStats = partyStats?.campaignStats?.[selectedConstituency] || {
+        awareness: 0,
+        favorability: 0,
+        enthusiasm: 0
     };
 
-    // Calculate projected effect in real-time
-    const projectedEffect = calculateCampaignEffect(
-        {
-            type: actionType,
-            budget: actionCosts[actionType],
-            scope: 'constituency',
-            targetConstituency: selectedConstituency,
-            targetDemographic: targetDemographic === 'all' ? undefined : targetDemographic
-        },
-        currentStats,
-        constituency,
-        leadCandidate
+    // Get lead candidate for this constituency
+    const partyPoliticians = getPartyPoliticians(gameState, playerPartyId);
+    // Filter for politicians in this constituency (assuming relations.representedConstituency is set)
+    // Note: The original code assumed a specific structure. We'll try to find one.
+    const leadCandidateId = partyPoliticians.find(pid =>
+        gameState.components.relations[pid]?.representedConstituency === selectedConstituency
     );
+    const leadCandidateIdentity = leadCandidateId ? getIdentity(gameState, leadCandidateId) : undefined;
+    const leadCandidateStats = leadCandidateId ? gameState.components.stats[leadCandidateId] : undefined;
+
+    const actionCosts: Record<string, number> = {
+        advertisement: 5000,
+        mediaAppearance: 2000,
+        rally: 1200,
+        doorToDoor: 0,
+        fundraise: 1000
+    };
+
+    // Mock calculation for projected effect (logic should be in system, but UI needs preview)
+    // In a real ECS, we might query a "PreviewSystem" or similar.
+    // For now, we'll keep the simple calculation here or move it to a helper.
+    const calculateProjectedEffect = () => {
+        const cost = actionCosts[actionType] || 0;
+        // Simple mock logic for UI preview
+        return {
+            awarenessChange: cost > 0 ? 1.5 : 0.5,
+            favorabilityChange: cost > 0 ? 1.0 : 0.2,
+            enthusiasmChange: cost > 0 ? 0.8 : 1.2,
+            estimatedReach: cost > 0 ? 0.4 : 0.1,
+            costPerVote: cost > 0 ? cost / 100 : 0
+        };
+    };
+
+    const projectedEffect = calculateProjectedEffect();
 
     // Action configurations with icons and costs
     const actions: Array<{
@@ -103,46 +114,34 @@ export const CampaignDashboard = ({
         cost: number;
         description: string;
     }> = [
-            { type: 'social_media', name: 'Social Media', icon: Smartphone, cost: 1000, description: 'Target youth voters online' },
-            { type: 'tv_ad', name: 'TV Ad', icon: Tv, cost: 5000, description: 'Broad reach, expensive' },
-            { type: 'newspaper', name: 'Newspaper', icon: Newspaper, cost: 2000, description: 'Reaches older demographics' },
-            { type: 'radio', name: 'Radio', icon: Radio, cost: 1500, description: 'Good for workers' },
-            { type: 'door_to_door', name: 'Door-to-Door', icon: Users, cost: 0, description: 'Free, high impact, low reach' },
+            { type: 'advertisement', name: 'TV Ad', icon: Tv, cost: 5000, description: 'Broad reach, expensive' },
+            { type: 'mediaAppearance', name: 'Media Appearance', icon: Newspaper, cost: 2000, description: 'Reaches older demographics' },
+            { type: 'rally', name: 'Rally', icon: Users, cost: 1200, description: 'Energize supporters' },
+            { type: 'doorToDoor', name: 'Door-to-Door', icon: Users, cost: 0, description: 'Free, high impact, low reach' },
+            { type: 'fundraise', name: 'Fundraise', icon: DollarSign, cost: 1000, description: 'Raise campaign funds' },
         ];
 
-    const demographics: Array<{ id: DemographicGroup | 'all'; name: string; weight?: number }> = [
+    const demographics: Array<{ id: string | 'all'; name: string; weight?: number }> = [
         { id: 'all', name: 'All Voters' },
-        { id: 'youth', name: 'Youth (18-35)', weight: constituency.demographics.youth },
-        { id: 'retirees', name: 'Retirees (65+)', weight: constituency.demographics.retirees },
-        { id: 'workers', name: 'Workers', weight: constituency.demographics.workers },
-        { id: 'upper_class', name: 'Upper Class', weight: constituency.demographics.upper_class },
+        { id: 'youth', name: 'Youth (18-35)', weight: constituencyData?.demographics?.youth },
+        { id: 'retirees', name: 'Retirees (65+)', weight: constituencyData?.demographics?.retirees },
+        { id: 'workers', name: 'Workers', weight: constituencyData?.demographics?.workers },
+        { id: 'upper_class', name: 'Upper Class', weight: constituencyData?.demographics?.upper_class },
     ];
 
     const selectedAction = actions.find(a => a.type === actionType)!;
-    const canAfford = gameState.budget >= selectedAction.cost;
+    const budget = partyResources?.money || 0;
+    const canAfford = budget >= selectedAction.cost;
 
-    const handleQuickAction = (constId: ConstituencyId, action: CampaignActionType, demo?: DemographicGroup) => {
-        onSelectConstituency(constId);
-        // We need to wait for state update or just fire action?
-        // Since onPerformAction uses the *current* selectedConstituency from props/state,
-        // firing it immediately might use the OLD constituency if React hasn't updated yet.
-        // However, we can't easily await the state update here without useEffect.
-        // A better approach for Quick Action is to have onPerformAction accept an optional constituency override.
-        // But for now, let's just switch view. The user can then click execute.
-        // Actually, the requirement was "Quick Action".
-        // Let's modify onPerformAction to accept constituencyId in the parent, or here.
-        // But onPerformAction signature is fixed in props.
-        // Let's just switch for now, or assume the parent handles it.
-        // Wait, I can pass the constituency ID to onPerformAction if I update the interface.
-        // But let's stick to the plan: "Quick Action button for recommended strategy".
-        // If I just switch, it's "Quick View".
-
-        // Revised plan: Just switch view and set up the action/demographic for the user to click "Execute".
-        // That's safer and teaches them.
+    const handleQuickAction = (constId: EntityId, action: CampaignActionType, demo?: string) => {
         onSelectConstituency(constId);
         setActionType(action);
         if (demo) setTargetDemographic(demo);
     };
+
+    if (!constituencyData) {
+        return <div className="p-6 text-white">Select a constituency to view campaign details.</div>;
+    }
 
     return (
         <div className="space-y-6">
@@ -155,7 +154,7 @@ export const CampaignDashboard = ({
                             Campaign War Room
                         </h2>
                         <p className="text-slate-400 text-sm mt-1">
-                            {constituency.name} • {constituency.seats} seats
+                            {constituencyName} • {constituencyData.seats} seats
                         </p>
                     </div>
                     <div className="text-right flex items-center space-x-4">
@@ -168,14 +167,14 @@ export const CampaignDashboard = ({
                         </button>
                         <div>
                             <div className="text-slate-400 text-sm">Budget</div>
-                            <div className="text-2xl font-bold text-green-400">€{gameState.budget.toLocaleString()}</div>
+                            <div className="text-2xl font-bold text-green-400">€{budget.toLocaleString()}</div>
                         </div>
                     </div>
                 </div>
 
-                {showSettings && gameState.parties.player.autoCampaign && (
+                {showSettings && gameState.globals.autoCampaign && (
                     <AutoCampaignSettings
-                        strategy={gameState.parties.player.autoCampaign}
+                        strategy={gameState.globals.autoCampaign as any} // TODO: Fix type
                         onUpdate={onUpdateAutoCampaign}
                         onClose={() => setShowSettings(false)}
                     />
@@ -402,14 +401,14 @@ export const CampaignDashboard = ({
                             {canAfford ? `Execute Campaign (€${selectedAction.cost.toLocaleString()})` : 'Insufficient Budget'}
                         </button>
 
-                        {leadCandidate && (
+                        {leadCandidateIdentity && leadCandidateStats && (
                             <div className="bg-slate-800/50 rounded p-3 border border-slate-700">
                                 <div className="text-xs text-slate-400 mb-1">Head of List Bonus</div>
                                 <div className="text-sm text-white">
-                                    {leadCandidate.name} (Charisma: {leadCandidate.charisma}/10)
+                                    {leadCandidateIdentity.name} (Charisma: {leadCandidateStats.charisma}/10)
                                 </div>
                                 <div className="text-xs text-indigo-400 mt-1">
-                                    {((1.0 + ((leadCandidate.charisma - 5) / 10)) * 100 - 100).toFixed(0)}% effectiveness boost
+                                    {((1.0 + (((leadCandidateStats.charisma || 5) - 5) / 10)) * 100 - 100).toFixed(0)}% effectiveness boost
                                 </div>
                             </div>
                         )}

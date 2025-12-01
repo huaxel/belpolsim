@@ -346,6 +346,7 @@ export interface Globals {
   // Game settings
   difficulty: 'easy' | 'normal' | 'hard';
   autoCampaign: boolean;
+  selectedConstituency?: EntityId;
 }
 
 /**

@@ -113,6 +113,6 @@ export const mapECSToLegacyState = (gameState: GameState): any => {
         maxTurns: 30, // Default max turns
         eventLog: [], // TODO: Map events
         isGameActive: true, // Assume active if state exists
-        selectedConstituencyId: 'brussels' // Default
+        selectedConstituency: gameState.globals.selectedConstituency || 'brussels' // Default to brussels if not set
     };
 };

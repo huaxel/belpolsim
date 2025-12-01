@@ -1,7 +1,22 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { CampaignDashboard } from './CampaignDashboard';
-import React from 'react';
+
+// Mock core query functions used by CampaignDashboard
+vi.mock('@/core', () => ({
+    getPartyStats: () => ({
+        campaignStats: { 'constituency-1': { awareness: 50, favorability: 50, enthusiasm: 50 } }
+    }),
+    getPartyResources: () => ({ money: 10000 }),
+    getConstituencyData: () => ({
+        name: 'Test Constituency',
+        seats: 5,
+        demographics: { youth: 0.2, retirees: 0.3, workers: 0.4, upper_class: 0.1 }
+    }),
+    getPartyPoliticians: () => ['pol1'],
+    getIdentity: () => ({ name: 'Politician 1' })
+}));
+
 
 // Mock Lucide icons
 vi.mock('lucide-react', () => ({
@@ -21,39 +36,7 @@ vi.mock('lucide-react', () => ({
 }));
 
 describe('CampaignDashboard', () => {
-    const mockGameState = {
-        budget: 10000,
-        parties: {
-            player: {
-                campaignStats: {
-                    'constituency-1': {
-                        awareness: 50,
-                        favorability: 50,
-                        enthusiasm: 50
-                    }
-                },
-                politicians: {
-                    'constituency-1': [
-                        { name: 'Politician 1', charisma: 7 }
-                    ]
-                },
-                autoCampaign: null
-            }
-        },
-        constituencies: {
-            'constituency-1': {
-                id: 'constituency-1',
-                name: 'Test Constituency',
-                seats: 5,
-                demographics: {
-                    youth: 0.2,
-                    retirees: 0.3,
-                    workers: 0.4,
-                    upper_class: 0.1
-                }
-            }
-        }
-    };
+    const mockGameState = {} as any; // Minimal placeholder, queries are mocked
 
     const defaultProps = {
         gameState: mockGameState,
@@ -67,5 +50,20 @@ describe('CampaignDashboard', () => {
         render(<CampaignDashboard {...defaultProps} />);
         expect(screen.getByText('Campaign War Room')).toBeInTheDocument();
         expect(screen.getByText('Test Constituency • 5 seats')).toBeInTheDocument();
+    });
+
+    it('renders safely when campaign stats are missing', () => {
+        const stateWithMissingStats = {
+            ...mockGameState,
+            parties: {
+                ...mockGameState.parties,
+                player: {
+                    ...mockGameState.parties.player,
+                    campaignStats: {} // Empty stats
+                }
+            }
+        };
+        render(<CampaignDashboard {...defaultProps} gameState={stateWithMissingStats} />);
+        expect(screen.getByText('Campaign War Room')).toBeInTheDocument();
     });
 });

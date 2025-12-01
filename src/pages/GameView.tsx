@@ -53,10 +53,10 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
                 return (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in duration-500">
                         <div className="lg:col-span-2 space-y-6">
-                            {legacyState.gamePhase === 'campaign' && (
+                            {gameState.gamePhase === 'campaign' && (
                                 <CampaignDashboard
-                                    gameState={legacyState}
-                                    selectedConstituency={legacyState.selectedConstituency}
+                                    gameState={gameState}
+                                    selectedConstituency={gameState.globals.selectedConstituency}
                                     onPerformAction={(actionType: any, targetDemographic: any) => {
                                         handleAction(actionType, targetDemographic);
                                     }}
