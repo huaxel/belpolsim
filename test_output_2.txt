@@ -1,0 +1,148 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.14 [39m[90mC:/Users/jbenjumeamoreno/source/repos/belpolsim[39m
+
+ [31mÔØ»[39m src/engine/game.test.ts [2m([22m[2m9 tests[22m[2m | [22m[31m8 failed[39m[2m)[22m[32m 39[2mms[22m[39m
+[31m       [31m├ù[31m should handle CANVASS action[39m[32m 10[2mms[22m[39m
+[31m       [31m├ù[31m should handle RALLY action[39m[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should handle POSTERS action[39m[32m 3[2mms[22m[39m
+[31m       [31m├ù[31m should handle FUNDRAISE action[39m[32m 3[2mms[22m[39m
+[31m       [31m├ù[31m should handle TV_AD action[39m[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should handle DEBATE action[39m[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should advance the turn[39m[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should regenerate energy[39m[32m 4[2mms[22m[39m
+       [32mÔ£ô[39m should trigger election when max turns reached[32m 1[2mms[22m[39m
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ» Failed Tests 8 ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»
+
+ FAIL  src/engine/game.test.ts > Game Logic > Action Handlers > should handle CANVASS action
+TypeError: Cannot read properties of undefined (reading 'antwerp')
+ ÔØ» applyPollingChange src/engine/game.ts:11:19
+      9|     const newState = JSON.parse(JSON.stringify(state)); // Deep copy
+     10| 
+     11|     if (!newState.polling[constituencyId]) {
+       |                   ^
+     12|         newState.polling[constituencyId] = {};
+     13|     }
+ ÔØ» performCanvas src/engine/game.ts:50:20
+ ÔØ» handleAction src/engine/game.ts:279:20
+ ÔØ» src/engine/game.test.ts:19:28
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[1/8]ÔÄ»
+
+ FAIL  src/engine/game.test.ts > Game Logic > Action Handlers > should handle RALLY action
+TypeError: Cannot read properties of undefined (reading 'antwerp')
+ ÔØ» applyPollingChange src/engine/game.ts:11:19
+      9|     const newState = JSON.parse(JSON.stringify(state)); // Deep copy
+     10| 
+     11|     if (!newState.polling[constituencyId]) {
+       |                   ^
+     12|         newState.polling[constituencyId] = {};
+     13|     }
+ ÔØ» performRally src/engine/game.ts:85:20
+ ÔØ» handleAction src/engine/game.ts:281:20
+ ÔØ» src/engine/game.test.ts:29:28
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[2/8]ÔÄ»
+
+ FAIL  src/engine/game.test.ts > Game Logic > Action Handlers > should handle POSTERS action
+TypeError: Cannot read properties of undefined (reading 'antwerp')
+ ÔØ» applyPollingChange src/engine/game.ts:11:19
+      9|     const newState = JSON.parse(JSON.stringify(state)); // Deep copy
+     10| 
+     11|     if (!newState.polling[constituencyId]) {
+       |                   ^
+     12|         newState.polling[constituencyId] = {};
+     13|     }
+ ÔØ» performPosters src/engine/game.ts:115:20
+ ÔØ» handleAction src/engine/game.ts:283:20
+ ÔØ» src/engine/game.test.ts:38:28
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[3/8]ÔÄ»
+
+ FAIL  src/engine/game.test.ts > Game Logic > Action Handlers > should handle FUNDRAISE action
+TypeError: Cannot read properties of undefined (reading 'antwerp')
+ ÔØ» applyPollingChange src/engine/game.ts:11:19
+      9|     const newState = JSON.parse(JSON.stringify(state)); // Deep copy
+     10| 
+     11|     if (!newState.polling[constituencyId]) {
+       |                   ^
+     12|         newState.polling[constituencyId] = {};
+     13|     }
+ ÔØ» performFundraise src/engine/game.ts:133:20
+ ÔØ» handleAction src/engine/game.ts:285:20
+ ÔØ» src/engine/game.test.ts:47:28
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[4/8]ÔÄ»
+
+ FAIL  src/engine/game.test.ts > Game Logic > Action Handlers > should handle TV_AD action
+TypeError: Cannot read properties of undefined (reading 'antwerp')
+ ÔØ» applyPollingChange src/engine/game.ts:11:19
+      9|     const newState = JSON.parse(JSON.stringify(state)); // Deep copy
+     10| 
+     11|     if (!newState.polling[constituencyId]) {
+       |                   ^
+     12|         newState.polling[constituencyId] = {};
+     13|     }
+ ÔØ» src/engine/game.ts:151:24
+ ÔØ» applyRegionalPollingChange src/engine/game.ts:147:21
+ ÔØ» performTvAd src/engine/game.ts:168:20
+ ÔØ» handleAction src/engine/game.ts:287:20
+ ÔØ» src/engine/game.test.ts:56:28
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[5/8]ÔÄ»
+
+ FAIL  src/engine/game.test.ts > Game Logic > Action Handlers > should handle DEBATE action
+TypeError: Cannot read properties of undefined (reading 'antwerp')
+ ÔØ» applyPollingChange src/engine/game.ts:11:19
+      9|     const newState = JSON.parse(JSON.stringify(state)); // Deep copy
+     10| 
+     11|     if (!newState.polling[constituencyId]) {
+       |                   ^
+     12|         newState.polling[constituencyId] = {};
+     13|     }
+ ÔØ» src/engine/game.ts:151:24
+ ÔØ» applyRegionalPollingChange src/engine/game.ts:147:21
+ ÔØ» performDebate src/engine/game.ts:210:20
+ ÔØ» handleAction src/engine/game.ts:289:20
+ ÔØ» src/engine/game.test.ts:64:28
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[6/8]ÔÄ»
+
+ FAIL  src/engine/game.test.ts > Game Logic > End Turn > should advance the turn
+TypeError: Cannot read properties of undefined (reading 'limburg')
+ ÔØ» applyPollingChange src/engine/game.ts:11:19
+      9|     const newState = JSON.parse(JSON.stringify(state)); // Deep copy
+     10| 
+     11|     if (!newState.polling[constituencyId]) {
+       |                   ^
+     12|         newState.polling[constituencyId] = {};
+     13|     }
+ ÔØ» src/engine/game.ts:310:24
+ ÔØ» performAiMoves src/engine/game.ts:302:15
+ ÔØ» endTurn src/engine/game.ts:344:16
+ ÔØ» src/engine/game.test.ts:75:30
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[7/8]ÔÄ»
+
+ FAIL  src/engine/game.test.ts > Game Logic > End Turn > should regenerate energy
+TypeError: Cannot read properties of undefined (reading 'brussels_capital')
+ ÔØ» applyPollingChange src/engine/game.ts:11:19
+      9|     const newState = JSON.parse(JSON.stringify(state)); // Deep copy
+     10| 
+     11|     if (!newState.polling[constituencyId]) {
+       |                   ^
+     12|         newState.polling[constituencyId] = {};
+     13|     }
+ ÔØ» src/engine/game.ts:310:24
+ ÔØ» performAiMoves src/engine/game.ts:302:15
+ ÔØ» endTurn src/engine/game.ts:344:16
+ ÔØ» src/engine/game.test.ts:82:30
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[8/8]ÔÄ»
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m8 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (9)[39m
+[2m   Start at [22m 15:41:59
+[2m   Duration [22m 2.81s[2m (transform 229ms, setup 452ms, import 313ms, tests 39ms, environment 1.60s)[22m
+

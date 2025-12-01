@@ -1,0 +1,231 @@
+
+> belpolsim@0.0.0 test
+> vitest src/engine/game.test.ts
+
+
+[1m[44m DEV [49m[22m [34mv4.0.14 [39m[90mC:/Users/jbenjumeamoreno/source/repos/belpolsim[39m
+
+ [31mÔØ»[39m src/engine/game.test.ts [2m([22m[2m9 tests[22m[2m | [22m[31m8 failed[39m[2m)[22m[32m 34[2mms[22m[39m
+[31m       [31m├ù[31m should handle CANVASS action[39m[32m 6[2mms[22m[39m
+[31m       [31m├ù[31m should handle RALLY action[39m[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should handle POSTERS action[39m[32m 3[2mms[22m[39m
+[31m       [31m├ù[31m should handle FUNDRAISE action[39m[32m 3[2mms[22m[39m
+[31m       [31m├ù[31m should handle TV_AD action[39m[32m 3[2mms[22m[39m
+[31m       [31m├ù[31m should handle DEBATE action[39m[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should advance the turn[39m[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m should regenerate energy[39m[32m 3[2mms[22m[39m
+       [32mÔ£ô[39m should trigger election when max turns reached[32m 2[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m8 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (9)[39m
+[2m   Start at [22m 15:38:31
+[2m   Duration [22m 2.05s[2m (transform 161ms, setup 309ms, import 261ms, tests 34ms, environment 1.03s)[22m
+
+[1m[41m FAIL [49m[22m [31mTests failed. Watching for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[44m RERUN [49m[22m [34m[2msrc/engine/game.ts [22m[34mx1 [34m[39m
+       [2m Filename pattern: [22m[34msrc/engine/game.test.ts[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [2mno tests[22m
+[2m   Start at [22m 15:42:36
+[2m   Duration [22m 7.75s
+
+[1m[41m FAIL [49m[22m [31mTests failed. Watching for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[44m RERUN [49m[22m [34m[2msrc/engine/game.ts [22m[34mx2 [34m[39m
+       [2m Filename pattern: [22m[34msrc/engine/game.test.ts[39m
+
+[90mstdout[2m | src/engine/game.test.ts[2m > [22m[2mGame Logic[2m > [22m[2mAction Handlers[2m > [22m[2mshould handle CANVASS action
+[22m[39mapplyPollingChange called antwerp player [33m1.5[39m
+newState.polling is missing!
+Initializing polling for antwerp
+
+[90mstdout[2m | src/engine/game.test.ts[2m > [22m[2mGame Logic[2m > [22m[2mAction Handlers[2m > [22m[2mshould handle RALLY action
+[22m[39mapplyPollingChange called antwerp player [33m-3[39m
+newState.polling is missing!
+Initializing polling for antwerp
+
+[90mstdout[2m | src/engine/game.test.ts[2m > [22m[2mGame Logic[2m > [22m[2mAction Handlers[2m > [22m[2mshould handle POSTERS action
+[22m[39mapplyPollingChange called antwerp player [33m2[39m
+newState.polling is missing!
+Initializing polling for antwerp
+
+[90mstdout[2m | src/engine/game.test.ts[2m > [22m[2mGame Logic[2m > [22m[2mAction Handlers[2m > [22m[2mshould handle FUNDRAISE action
+[22m[39mapplyPollingChange called antwerp player [33m-1.5[39m
+newState.polling is missing!
+Initializing polling for antwerp
+
+[90mstdout[2m | src/engine/game.test.ts[2m > [22m[2mGame Logic[2m > [22m[2mAction Handlers[2m > [22m[2mshould handle TV_AD action
+[22m[39mapplyPollingChange called antwerp player [33m0.5[39m
+newState.polling is missing!
+Initializing polling for antwerp
+applyPollingChange called east_flanders player [33m0.5[39m
+Initializing polling for east_flanders
+applyPollingChange called flemish_brabant player [33m0.5[39m
+Initializing polling for flemish_brabant
+applyPollingChange called limburg player [33m0.5[39m
+Initializing polling for limburg
+applyPollingChange called west_flanders player [33m0.5[39m
+Initializing polling for west_flanders
+
+[90mstdout[2m | src/engine/game.test.ts[2m > [22m[2mGame Logic[2m > [22m[2mAction Handlers[2m > [22m[2mshould handle DEBATE action
+[22m[39mapplyPollingChange called antwerp player [33m0.5[39m
+newState.polling is missing!
+Initializing polling for antwerp
+applyPollingChange called east_flanders player [33m0.5[39m
+Initializing polling for east_flanders
+applyPollingChange called flemish_brabant player [33m0.5[39m
+Initializing polling for flemish_brabant
+applyPollingChange called limburg player [33m0.5[39m
+Initializing polling for limburg
+applyPollingChange called west_flanders player [33m0.5[39m
+Initializing polling for west_flanders
+
+[90mstdout[2m | src/engine/game.test.ts[2m > [22m[2mGame Logic[2m > [22m[2mEnd Turn[2m > [22m[2mshould advance the turn
+[22m[39mapplyPollingChange called antwerp nva [33m1.5553755642044973[39m
+newState.polling is missing!
+Initializing polling for antwerp
+applyPollingChange called east_flanders vb [33m1.8056644329000224[39m
+Initializing polling for east_flanders
+applyPollingChange called antwerp vooruit [33m1.9681237196696717[39m
+applyPollingChange called brussels_capital cdv [33m2.301383208740123[39m
+Initializing polling for brussels_capital
+applyPollingChange called brussels_capital ps [33m1.6083896119281107[39m
+applyPollingChange called walloon_brabant mr [33m0.5010345249273216[39m
+Initializing polling for walloon_brabant
+applyPollingChange called flemish_brabant ptb [33m1.404153879246847[39m
+Initializing polling for flemish_brabant
+applyPollingChange called hainaut lesengages [33m1.9990305496297407[39m
+Initializing polling for hainaut
+
+[90mstdout[2m | src/engine/game.test.ts[2m > [22m[2mGame Logic[2m > [22m[2mEnd Turn[2m > [22m[2mshould regenerate energy
+[22m[39mapplyPollingChange called antwerp nva [33m0.7565088630633623[39m
+newState.polling is missing!
+Initializing polling for antwerp
+applyPollingChange called brussels_capital vb [33m1.175807408409344[39m
+Initializing polling for brussels_capital
+applyPollingChange called antwerp vooruit [33m1.912198101301147[39m
+applyPollingChange called west_flanders cdv [33m1.4763058662170314[39m
+Initializing polling for west_flanders
+applyPollingChange called hainaut ps [33m2.0865433238273265[39m
+Initializing polling for hainaut
+applyPollingChange called namur mr [33m0.98981711845802[39m
+Initializing polling for namur
+applyPollingChange called west_flanders ptb [33m1.617908761942274[39m
+applyPollingChange called liege lesengages [33m0.921248387214576[39m
+Initializing polling for liege
+
+ [32mÔ£ô[39m src/engine/game.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 528[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m9 passed[39m[22m[90m (9)[39m
+[2m   Start at [22m 15:43:37
+[2m   Duration [22m 1.32s
+
+[1m[42m PASS [49m[22m [32mWaiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[44m RERUN [49m[22m [34m[2msrc/engine/game.ts [22m[34mx3 [34m[39m
+       [2m Filename pattern: [22m[34msrc/engine/game.test.ts[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [2mno tests[22m
+[2m   Start at [22m 15:45:55
+[2m   Duration [22m 619ms
+
+[1m[41m FAIL [49m[22m [31mTests failed. Watching for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[44m RERUN [49m[22m [34m[2msrc/engine/game.ts [22m[34mx4 [34m[39m
+       [2m Filename pattern: [22m[34msrc/engine/game.test.ts[39m
+
+ [31mÔØ»[39m src/engine/game.test.ts [2m([22m[2m9 tests[22m[2m | [22m[31m8 failed[39m[2m)[22m[32m 136[2mms[22m[39m
+[31m       [31m├ù[31m should handle CANVASS action[39m[32m 24[2mms[22m[39m
+[31m       [31m├ù[31m should handle RALLY action[39m[32m 10[2mms[22m[39m
+[31m       [31m├ù[31m should handle POSTERS action[39m[32m 10[2mms[22m[39m
+[31m       [31m├ù[31m should handle FUNDRAISE action[39m[32m 9[2mms[22m[39m
+[31m       [31m├ù[31m should handle TV_AD action[39m[32m 14[2mms[22m[39m
+[31m       [31m├ù[31m should handle DEBATE action[39m[32m 20[2mms[22m[39m
+[31m       [31m├ù[31m should advance the turn[39m[32m 24[2mms[22m[39m
+[31m       [31m├ù[31m should regenerate energy[39m[32m 15[2mms[22m[39m
+       [32mÔ£ô[39m should trigger election when max turns reached[32m 4[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m8 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (9)[39m
+[2m   Start at [22m 15:46:51
+[2m   Duration [22m 956ms
+
+[1m[41m FAIL [49m[22m [31mTests failed. Watching for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[44m RERUN [49m[22m [34m[2msrc/engine/game.ts [22m[34mx5 [34m[39m
+       [2m Filename pattern: [22m[34msrc/engine/game.test.ts[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [2mno tests[22m
+[2m   Start at [22m 15:48:05
+[2m   Duration [22m 589ms
+
+[1m[41m FAIL [49m[22m [31mTests failed. Watching for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[44m RERUN [49m[22m [34m[2msrc/engine/game.ts [22m[34mx6 [34m[39m
+       [2m Filename pattern: [22m[34msrc/engine/game.test.ts[39m
+
+ [32mÔ£ô[39m src/engine/game.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 190[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m9 passed[39m[22m[90m (9)[39m
+[2m   Start at [22m 15:49:06
+[2m   Duration [22m 1.11s
+
+[1m[42m PASS [49m[22m [32mWaiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[44m RERUN [49m[22m [34m[2msrc/events.ts [22m[34mx7 [34m[39m
+       [2m Filename pattern: [22m[34msrc/engine/game.test.ts[39m
+
+ [32mÔ£ô[39m src/engine/game.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 167[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m9 passed[39m[22m[90m (9)[39m
+[2m   Start at [22m 15:56:21
+[2m   Duration [22m 830ms
+
+[1m[42m PASS [49m[22m [32mWaiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[44m RERUN [49m[22m [34m[2msrc/engine/governing.ts [22m[34mx8 [34m[39m
+       [2m Filename pattern: [22m[34msrc/engine/game.test.ts[39m
+
+ [32mÔ£ô[39m src/engine/game.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 157[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m9 passed[39m[22m[90m (9)[39m
+[2m   Start at [22m 15:59:30
+[2m   Duration [22m 8.92s
+
+[1m[42m PASS [49m[22m [32mWaiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[44m RERUN [49m[22m [34m[2msrc/engine/ai.ts [22m[34mx9 [34m[39m
+       [2m Filename pattern: [22m[34msrc/engine/game.test.ts[39m
+
+ [32mÔ£ô[39m src/engine/game.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 82[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m9 passed[39m[22m[90m (9)[39m
+[2m   Start at [22m 16:07:35
+[2m   Duration [22m 847ms
+
+[1m[42m PASS [49m[22m [32mWaiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[44m RERUN [49m[22m [34m[2msrc/engine/ai.ts [22m[34mx10 [34m[39m
+       [2m Filename pattern: [22m[34msrc/engine/game.test.ts[39m
+
+ [32mÔ£ô[39m src/engine/game.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 74[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m9 passed[39m[22m[90m (9)[39m
+[2m   Start at [22m 16:08:01
+[2m   Duration [22m 816ms
+
+[1m[42m PASS [49m[22m [32mWaiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m

@@ -41,8 +41,8 @@ export const CoalitionPhaseModal: React.FC<CoalitionPhaseModalProps> = ({
     };
 
     const placeholderMinisters: Politician[] = [
-        { id: 'playerMin1', name: 'Player Minister 1', partyId: playerPartyId, language: 'dutch', constituency: 'antwerp', charisma: 5, expertise: 5, popularity: 50, internalClout: 50, isElected: true, ministerialRole: 'Finance' },
-        { id: 'playerMin2', name: 'Player Minister 2', partyId: playerPartyId, language: 'french', constituency: 'brussels_capital', charisma: 5, expertise: 5, popularity: 50, internalClout: 50, isElected: true, ministerialRole: 'Foreign Affairs' },
+        { id: 'playerMin1', name: 'Player Minister 1', partyId: playerPartyId, language: 'dutch', constituency: 'antwerp', charisma: 5, expertise: 5, popularity: 50, internalClout: 50, listPosition: 1, originalListPosition: 1, isElected: true, ministerialRole: 'Finance' },
+        { id: 'playerMin2', name: 'Player Minister 2', partyId: playerPartyId, language: 'french', constituency: 'brussels_capital', charisma: 5, expertise: 5, popularity: 50, internalClout: 50, listPosition: 1, originalListPosition: 1, isElected: true, ministerialRole: 'Foreign Affairs' },
     ];
 
     const handleSubmitGovernmentProposal = (proposal: { partners: PartyId[], policyStances: Stance[], ministriesOffered: Record<PartyId, number> }) => {
@@ -54,7 +54,7 @@ export const CoalitionPhaseModal: React.FC<CoalitionPhaseModalProps> = ({
         });
     };
 
-    if (gameState.gamePhase !== 'coalition_formation') return null;
+    if (gameState.gamePhase !== 'formation') return null;
 
     const renderContent = () => {
         switch (stage) {

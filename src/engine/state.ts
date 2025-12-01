@@ -56,6 +56,8 @@ export const generatePoliticians = (partyId: PartyId, constituencyId: Constituen
         internalClout: Math.floor(Math.random() * 100),
         popularity: Math.floor(Math.random() * 100), // New field
         ministerialRole: null, // New field
+        listPosition: i + 1, // 1-based index
+        originalListPosition: i + 1,
     }));
 };
 
@@ -176,7 +178,18 @@ export const createInitialState = (): GameState => {
         constituencies: CONSTITUENCIES,
         parliament: { seats: [] },
         government: null,
-        nationalBudget: 0,
+        informateur: null,
+        formateur: null,
+        nationalBudget: {
+            revenue: 250000, // €250B
+            expenses: 260000, // €260B (Deficit start)
+            debt: 500000, // €500B
+            deficit: 10000,
+            lastYearGrowth: 1.2
+        },
+        crises: [],
+        laws: [],
+        publicApproval: 50,
         parties: {
             player: initParty('player', 'Ecolo-Groen (You)', 'bg-green-600', false, ['flanders', 'wallonia', 'brussels'], 12, { economic: -6, social: -7 }, [
                 { issueId: 'nuclear_exit', position: 80, salience: 9 },

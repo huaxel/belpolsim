@@ -88,7 +88,7 @@ export const calculateElection = (state: GameState): GameState => {
 
     return {
         ...state,
-        gamePhase: hasMajority ? 'governing' : 'coalition_formation',
+        gamePhase: hasMajority ? 'governing' : 'consultation',
         parties: parties,
         parliament: { seats: allElectedPoliticians },
         eventLog: [...state.eventLog, `ELECTION OVER! You won ${playerSeats} seats. Majority needed: ${MAJORITY_SEATS}.`]
