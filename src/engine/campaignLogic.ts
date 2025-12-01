@@ -31,10 +31,14 @@ export type CampaignActionType =
     | 'door_to_door'
     | 'rally';
 
+export type CampaignScope = 'constituency' | 'regional' | 'national';
+
 export interface CampaignAction {
     type: CampaignActionType;
     budget: number;
-    targetConstituency: ConstituencyId;
+    scope: CampaignScope;
+    targetConstituency?: ConstituencyId; // For constituency scope
+    targetRegion?: import('../types').RegionId; // For regional scope
     targetDemographic?: DemographicGroup; // Optional targeting
 }
 

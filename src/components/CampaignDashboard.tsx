@@ -33,11 +33,21 @@ export const CampaignDashboard = ({
     const currentStats = gameState.parties.player.campaignStats[selectedConstituency];
     const leadCandidate = gameState.parties.player.politicians[selectedConstituency]?.[0];
 
+    const actionCosts = {
+        social_media: 1000,
+        tv_ad: 5000,
+        newspaper: 2000,
+        radio: 1500,
+        door_to_door: 0,
+        rally: 1200
+    };
+
     // Calculate projected effect in real-time
     const projectedEffect = calculateCampaignEffect(
         {
             type: actionType,
-            budget: 0, // Not used in calculation
+            budget: actionCosts[actionType],
+            scope: 'constituency',
             targetConstituency: selectedConstituency,
             targetDemographic: targetDemographic === 'all' ? undefined : targetDemographic
         },
@@ -169,8 +179,8 @@ export const CampaignDashboard = ({
                                     key={action.type}
                                     onClick={() => setActionType(action.type)}
                                     className={`w-full p-3 rounded-lg border-2 transition-all ${isSelected
-                                            ? 'border-indigo-500 bg-indigo-900/30'
-                                            : 'border-slate-700 bg-slate-800 hover:border-slate-600'
+                                        ? 'border-indigo-500 bg-indigo-900/30'
+                                        : 'border-slate-700 bg-slate-800 hover:border-slate-600'
                                         }`}
                                 >
                                     <div className="flex items-center justify-between">
@@ -203,8 +213,8 @@ export const CampaignDashboard = ({
                                     key={demo.id}
                                     onClick={() => setTargetDemographic(demo.id)}
                                     className={`w-full p-2 rounded border transition-all text-left ${targetDemographic === demo.id
-                                            ? 'border-indigo-500 bg-indigo-900/20 text-white'
-                                            : 'border-slate-700 bg-slate-800 text-slate-300 hover:border-slate-600'
+                                        ? 'border-indigo-500 bg-indigo-900/20 text-white'
+                                        : 'border-slate-700 bg-slate-800 text-slate-300 hover:border-slate-600'
                                         }`}
                                 >
                                     <span className="text-sm">{demo.name}</span>
@@ -305,8 +315,8 @@ export const CampaignDashboard = ({
                         onClick={() => onPerformAction(actionType, targetDemographic === 'all' ? undefined : targetDemographic)}
                         disabled={!canAfford}
                         className={`w-full py-4 rounded-lg font-bold text-lg transition-all ${canAfford
-                                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg'
-                                : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                            ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg'
+                            : 'bg-slate-700 text-slate-500 cursor-not-allowed'
                             }`}
                     >
                         {canAfford ? `Execute Campaign (€${selectedAction.cost.toLocaleString()})` : 'Insufficient Budget'}

@@ -388,6 +388,7 @@ const performCampaignV2Action = (
         {
             type: actionType,
             budget: cost,
+            scope: 'constituency',
             targetConstituency: state.selectedConstituency,
             targetDemographic
         },
@@ -431,6 +432,90 @@ export const performRadio = (state: GameState, targetDemographic?: DemographicGr
 
 export const performDoorToDoor = (state: GameState, targetDemographic?: DemographicGroup): ActionResult => {
     return performCampaignV2Action(state, 'door_to_door', 0, 3, targetDemographic); // Free but costs 3 energy
+};
+
+/**
+ * Perform regional campaign - affects all constituencies in a region
+ */
+export const performRegionalCampaign = (
+    state: GameState,
+    actionType: CampaignActionType,
+    region: RegionId,
+    targetDemographic?: DemographicGroup
+): ActionResult => {
+    // Get all constituencies in region
+    const constituencies = Object.values(CONSTITUENCIES)
+        .filter(c => c.region === region)
+        .map(c => c.id);
+
+    // Calculate total cost
+    const baseCost = {
+        tv_ad: 5000,
+        social_media: 1000,
+        newspaper: 2000,
+        radio: 1500,
+        door_to_door: 0,
+        rally: 1200
+    }[actionType];
+
+    const totalCost = baseCost * constituencies.length;
+    const energyCost = actionType === 'door_to_door' ? 3 * constituencies.length : constituencies.length;
+
+    // Validate resources
+    if (state.budget < totalCost) {
+        return { newState: state, success: false, message: `Not enough budget. Need €${totalCost} for regional campaign.` };
+    }
+    if (state.energy < energyCost) {
+        return { newState: state, success: false, message: `Not enough energy. Need ${energyCost} energy for regional campaign.` };
+    }
+
+    // Apply to each constituency with randomization
+    let newState = { ...state };
+    const results: string[] = [];
+
+    constituencies.forEach(constId => {
+        const constituency = CONSTITUENCIES[constId];
+        const currentStats = newState.parties.player.campaignStats[constId];
+        const leadCandidate = newState.parties.player.politicians[constId]?.[0];
+
+        // Calculate effect
+        const effect = calculateCampaignEffect(
+            {
+                type: actionType,
+                budget: baseCost,
+                scope: 'constituency',
+                targetConstituency: constId,
+                targetDemographic
+            },
+            currentStats,
+            constituency,
+            leadCandidate
+        );
+
+        // Apply with 80-120% randomization
+        const randomFactor = 0.8 + (Math.random() * 0.4);
+        newState = applyCampaignStatsChange(
+            newState,
+            constId,
+            'player',
+            effect.awarenessChange * randomFactor,
+            effect.favorabilityChange * randomFactor,
+            effect.enthusiasmChange * randomFactor
+        );
+
+        results.push(`${constituency.name}: +${(effect.awarenessChange * randomFactor).toFixed(1)}%`);
+    });
+
+    newState.budget -= totalCost;
+    newState.energy -= energyCost;
+
+    const regionName = region === 'flanders' ? 'Flanders' : region === 'wallonia' ? 'Wallonia' : 'Brussels';
+    const targetDesc = targetDemographic ? ` targeting ${targetDemographic}` : '';
+    const actionName = actionType.replace('_', ' ');
+    const logMsg = `Regional ${actionName} in ${regionName}${targetDesc} (${constituencies.length} constituencies)`;
+    newState.eventLog = [...newState.eventLog, `Turn ${newState.turn}: ${logMsg}`];
+
+    return { newState, success: true, message: logMsg };
 };
 
 
