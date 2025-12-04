@@ -20,6 +20,7 @@ import type {
   PartyPlatform,
   ConstituencyData,
   IssueData,
+  PartyTrait,
 } from './types';
 import { createEntityId } from './types';
 
@@ -57,6 +58,7 @@ export interface CreatePartyOptions {
   // Platform
   positions?: Record<EntityId, number>;
   priorityIssues?: EntityId[];
+  traits?: PartyTrait[];
 }
 
 export function createParty(state: GameState, options: CreatePartyOptions): FactoryResult {
@@ -108,6 +110,7 @@ export function createParty(state: GameState, options: CreatePartyOptions): Fact
   const partyPlatform: PartyPlatform = {
     positions: options.positions ?? {},
     priorityIssues: options.priorityIssues ?? [],
+    traits: options.traits ?? [],
   };
 
   return {
@@ -350,4 +353,134 @@ export function createEntities<T extends Record<string, unknown>>(
   }
 
   return { state: currentState, entityIds };
+}
+
+// ============================================================================
+// SCENARIO FACTORY
+// ============================================================================
+
+export interface ScenarioOptions {
+  playerPartyId: string; // The ID of the party the player selected (e.g. 'socialist', 'liberal')
+}
+
+export function createScenarioState(options: ScenarioOptions): GameState {
+  let state = createEmptyState();
+
+  // 1. Create Issues
+  const issueResult = createEntities(state, createIssue, [
+    { id: 'economy', name: 'Economic Growth', category: 'economic' as const, salience: 80 },
+    { id: 'environment', name: 'Climate Action', category: 'environmental' as const, salience: 60 },
+    { id: 'immigration', name: 'Immigration Control', category: 'social' as const, salience: 70 },
+  ]);
+  state = issueResult.state;
+
+  // 2. Create Constituencies
+  const constResult = createEntities(state, createConstituency, [
+    { id: 'brussels', name: 'Brussels-Capital', region: 'brussels' as const, language: 'bilingual' as const, seats: 15, population: 1200000 },
+    { id: 'antwerp', name: 'Antwerp', region: 'flanders' as const, language: 'dutch' as const, seats: 20, population: 1800000 },
+    { id: 'liege', name: 'Liège', region: 'wallonia' as const, language: 'french' as const, seats: 15, population: 1100000 },
+  ]);
+  state = constResult.state;
+
+  // 3. Create Parties
+  // We define the presets here. The player will take control of one of them.
+  // 3. Create Parties
+  // We define the presets here. The player will take control of one of them.
+  const partyOptions: CreatePartyOptions[] = [
+    {
+      id: 'socialist',
+      name: 'Socialist Party',
+      color: '#ef4444',
+      ideology: 'left',
+      seats: 28,
+      money: 60000,
+      traits: [{ id: 'pillar', name: 'The Pillar', description: 'Strong union ties', effect: { stat: 'grassrootsStrength', value: 20 } }],
+      positions: { economy: -60, environment: 40, immigration: 20 },
+    },
+    {
+      id: 'liberal',
+      name: 'Liberal Reformists',
+      color: '#3b82f6',
+      ideology: 'center-right',
+      seats: 32,
+      money: 90000,
+      traits: [{ id: 'blue_factory', name: 'Blue Factory', description: 'High fundraising', effect: { stat: 'fundraising', value: 20 } }],
+      positions: { economy: 80, environment: 0, immigration: -10 },
+    },
+    {
+      id: 'flemish',
+      name: 'Flemish Alliance',
+      color: '#f59e0b',
+      ideology: 'conservative-regionalist',
+      seats: 35,
+      money: 70000,
+      traits: [{ id: 'community_first', name: 'Community First', description: 'High popularity in Flanders', effect: { stat: 'momentum', value: 10 } }],
+      positions: { economy: 60, environment: -20, immigration: -40 },
+    },
+    {
+      id: 'green',
+      name: 'The Ecologists',
+      color: '#22c55e',
+      ideology: 'green',
+      seats: 18,
+      money: 35000,
+      traits: [{ id: 'climate_vanguard', name: 'Climate Vanguard', description: 'Bonus from environmental issues', effect: { stat: 'momentum', value: 10 } }],
+      positions: { economy: -30, environment: 90, immigration: 60 },
+    },
+    {
+      id: 'far_right',
+      name: 'Flemish Interest',
+      color: '#000000', // Often black or yellow/black
+      ideology: 'far-right',
+      isExtremist: true,
+      seats: 22,
+      money: 45000,
+      traits: [{ id: 'secure_borders', name: 'Secure Borders', description: 'High populist appeal', effect: { stat: 'momentum', value: 20 } }],
+      positions: { economy: 40, environment: -40, immigration: -90 },
+    },
+    {
+      id: 'workers',
+      name: 'Workers\' Party',
+      color: '#7f1d1d',
+      ideology: 'radical-left',
+      isExtremist: true,
+      seats: 15,
+      money: 20000,
+      traits: [{ id: 'class_struggle', name: 'Class Struggle', description: 'High volatility', effect: { stat: 'momentum', value: 20 } }],
+      positions: { economy: -90, environment: 60, immigration: 40 },
+    }
+  ];
+
+  const partyResult = createEntities(state, createParty as any, partyOptions as any);
+  state = partyResult.state;
+
+  // 4. Set Player Party
+  // We look for the party that matches the selected ID.
+  // Note: createParty prefixes IDs with 'party:'.
+  const targetId = `party:${options.playerPartyId}`;
+  if (state.entities.includes(targetId)) {
+    state.globals.playerParty = targetId;
+  } else {
+    // Fallback if ID not found (should not happen if UI is correct)
+    console.error(`Player party ${targetId} not found, defaulting to first party.`);
+    state.globals.playerParty = partyResult.entityIds[0];
+  }
+
+  // 5. Create Politicians (Leaders)
+  const politicians: CreatePoliticianOptions[] = partyResult.entityIds.map((partyId, index) => ({
+    id: `leader_${index}`,
+    name: `Leader of ${state.components.identity[partyId].name}`,
+    partyId: partyId,
+    isLeader: true,
+    charisma: 50 + Math.floor(Math.random() * 30),
+  }));
+
+  const polResult = createEntities(state, createPolitician as any, politicians as any);
+  state = polResult.state;
+
+  // 6. Set Phase & Defaults
+  state.globals.currentPhase = 'campaign'; // Start game in campaign mode
+  state.globals.selectedConstituency = constResult.entityIds[0]; // Default to first constituency (Brussels)
+
+  return state;
 }

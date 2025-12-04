@@ -38,8 +38,8 @@ interface AutoCampaignStrategy {
 
 interface CampaignDashboardProps {
     gameState: GameState;
-    selectedConstituency: EntityId; // This is an ID now
-    onPerformAction: (actionType: CampaignActionType, targetDemographic?: string) => void;
+    selectedConstituency: EntityId;
+    onPerformAction: (actionType: CampaignActionType, targetConstituencyId?: string, focusIssueId?: string) => void;
     onSelectConstituency: (id: EntityId) => void;
     onUpdateAutoCampaign: (settings: AutoCampaignStrategy) => void;
 }
@@ -52,7 +52,7 @@ export const CampaignDashboard = ({
     onUpdateAutoCampaign
 }: CampaignDashboardProps) => {
     const [actionType, setActionType] = useState<CampaignActionType>('doorToDoor');
-    const [targetDemographic, setTargetDemographic] = useState<string | 'all'>('all');
+    const [focusIssueId, setFocusIssueId] = useState<string>('');
     const [showSettings, setShowSettings] = useState(false);
 
     const playerPartyId = gameState.globals.playerParty;
@@ -63,6 +63,12 @@ export const CampaignDashboard = ({
 
     const partyStats = getPartyStats(gameState, playerPartyId);
     const partyResources = getPartyResources(gameState, playerPartyId);
+
+    // Get Issues
+    const issues = Object.keys(gameState.components.issueData).map(id => ({
+        id,
+        ...gameState.components.issueData[id]
+    }));
 
     // Safe access to campaign stats for this constituency
     const currentStats = partyStats?.campaignStats?.[selectedConstituency] || {
@@ -86,7 +92,9 @@ export const CampaignDashboard = ({
         mediaAppearance: 2000,
         rally: 1200,
         doorToDoor: 0,
-        fundraise: 1000
+        fundraise: 1000,
+        attackAd: 10000,
+        policyAnnouncement: 3000
     };
 
     // Mock calculation for projected effect (logic should be in system, but UI needs preview)
@@ -119,28 +127,31 @@ export const CampaignDashboard = ({
             { type: 'rally', name: 'Rally', icon: Users, cost: 1200, description: 'Energize supporters' },
             { type: 'doorToDoor', name: 'Door-to-Door', icon: Users, cost: 0, description: 'Free, high impact, low reach' },
             { type: 'fundraise', name: 'Fundraise', icon: DollarSign, cost: 1000, description: 'Raise campaign funds' },
+            { type: 'policyAnnouncement', name: 'Policy Speech', icon: TrendingUp, cost: 3000, description: 'Focus on specific issue' },
         ];
-
-    const demographics: Array<{ id: string | 'all'; name: string; weight?: number }> = [
-        { id: 'all', name: 'All Voters' },
-        { id: 'youth', name: 'Youth (18-35)', weight: constituencyData?.demographics?.youth },
-        { id: 'retirees', name: 'Retirees (65+)', weight: constituencyData?.demographics?.retirees },
-        { id: 'workers', name: 'Workers', weight: constituencyData?.demographics?.workers },
-        { id: 'upper_class', name: 'Upper Class', weight: constituencyData?.demographics?.upper_class },
-    ];
 
     const selectedAction = actions.find(a => a.type === actionType)!;
     const budget = partyResources?.money || 0;
     const canAfford = budget >= selectedAction.cost;
 
-    const handleQuickAction = (constId: EntityId, action: CampaignActionType, demo?: string) => {
+    const handleQuickAction = (constId: EntityId, action: CampaignActionType) => {
         onSelectConstituency(constId);
         setActionType(action);
-        if (demo) setTargetDemographic(demo);
     };
 
     if (!constituencyData) {
-        return <div className="p-6 text-white">Select a constituency to view campaign details.</div>;
+        return (
+            <div className="bg-slate-900 rounded-xl p-6 border border-slate-700 flex flex-col items-center justify-center h-full min-h-[400px]">
+                <Target className="text-slate-600 mb-4" size={48} />
+                <h3 className="text-xl font-bold text-white mb-2">No Constituency Selected</h3>
+                <p className="text-slate-400 text-center max-w-md">
+                    Select an active region on the map (e.g., Antwerp, Brussels, Liège) to view campaign data and execute actions.
+                </p>
+                <div className="mt-4 text-xs text-slate-600">
+                    Debug ID: {selectedConstituency || 'None'}
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -181,32 +192,9 @@ export const CampaignDashboard = ({
                 )}
 
                 <div className="grid grid-cols-3 gap-6">
-                    {/* Left: Demographics Overview */}
+                    {/* Left: Stats */}
                     <div className="col-span-1 space-y-4">
-                        <h3 className="text-white font-bold text-sm uppercase tracking-wide mb-3">
-                            Demographics
-                        </h3>
-
-                        {/* Demographics breakdown */}
-                        <div className="space-y-2">
-                            {demographics.slice(1).map(demo => (
-                                <div key={demo.id} className="bg-slate-800 rounded p-3">
-                                    <div className="flex justify-between items-center mb-1">
-                                        <span className="text-slate-300 text-sm">{demo.name}</span>
-                                        <span className="text-white font-bold">{((demo.weight || 0) * 100).toFixed(0)}%</span>
-                                    </div>
-                                    <div className="w-full bg-slate-700 rounded-full h-2">
-                                        <div
-                                            className="bg-indigo-500 h-2 rounded-full"
-                                            style={{ width: `${(demo.weight || 0) * 100}%` }}
-                                        />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Current Stats */}
-                        <div className="mt-6">
+                        <div className="mt-0">
                             <h3 className="text-white font-bold text-sm uppercase tracking-wide mb-3">
                                 Current Standing
                             </h3>
@@ -281,30 +269,23 @@ export const CampaignDashboard = ({
                             })}
                         </div>
 
-                        {/* Target Demographic */}
+                        {/* Issue Selector */}
                         <div className="mt-6">
                             <h3 className="text-white font-bold text-sm uppercase tracking-wide mb-3">
-                                Target Audience
+                                Focus Issue (Optional)
                             </h3>
-                            <div className="space-y-2">
-                                {demographics.map(demo => (
-                                    <button
-                                        key={demo.id}
-                                        onClick={() => setTargetDemographic(demo.id)}
-                                        className={`w-full p-2 rounded border transition-all text-left ${targetDemographic === demo.id
-                                            ? 'border-indigo-500 bg-indigo-900/20 text-white'
-                                            : 'border-slate-700 bg-slate-800 text-slate-300 hover:border-slate-600'
-                                            }`}
-                                    >
-                                        <span className="text-sm">{demo.name}</span>
-                                        {demo.weight && (
-                                            <span className="text-xs text-slate-500 ml-2">
-                                                ({(demo.weight * 100).toFixed(0)}%)
-                                            </span>
-                                        )}
-                                    </button>
+                            <select
+                                value={focusIssueId}
+                                onChange={(e) => setFocusIssueId(e.target.value)}
+                                className="w-full p-2 bg-slate-800 border border-slate-700 rounded text-white"
+                            >
+                                <option value="">No Specific Focus</option>
+                                {issues.map(issue => (
+                                    <option key={issue.id} value={issue.id}>
+                                        {gameState.components.identity[issue.id]?.name || issue.id}
+                                    </option>
                                 ))}
-                            </div>
+                            </select>
                         </div>
                     </div>
 
@@ -391,7 +372,7 @@ export const CampaignDashboard = ({
 
                         {/* Execute button */}
                         <button
-                            onClick={() => onPerformAction(actionType, targetDemographic === 'all' ? undefined : targetDemographic)}
+                            onClick={() => onPerformAction(actionType, selectedConstituency, focusIssueId || undefined)}
                             disabled={!canAfford}
                             className={`w-full py-4 rounded-lg font-bold text-lg transition-all ${canAfford
                                 ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg'

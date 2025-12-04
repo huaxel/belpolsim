@@ -4,17 +4,14 @@ import {
     coalitionSystem,
     governingSystem,
     createEmptyState,
-    createParty,
-    createConstituency,
-    createIssue,
-    createPolitician,
-    createEntities
+    createScenarioState,
 } from '@/core';
 import type {
     GameState,
     EntityId,
     EventChoice,
     GameAction,
+    CampaignAction,
     CampaignActionType,
     BillData
 } from '@/core';
@@ -22,50 +19,20 @@ import type { Action, ActionType, Stance, AutoCampaignStrategy } from '../utils/
 
 // Initialize game with default entities
 const initializeGame = (): GameState => {
-    let state = createEmptyState();
-
-    // Create Parties
-    const partyResult = createEntities(state, createParty, [
-        { id: 'player_party', name: 'Center Alliance', color: '#3b82f6', seats: 10, money: 50000 },
-        { id: 'opposition_party', name: 'Traditionalists', color: '#ef4444', seats: 15, money: 60000 }
-    ]);
-    state = partyResult.state;
-    const [playerPartyId, oppositionPartyId] = partyResult.entityIds;
-
-    // Set Player
-    state.globals.playerParty = playerPartyId;
-
-    // Create Constituencies
-    const constResult = createEntities(state, createConstituency, [
-        { id: 'brussels', name: 'Brussels-Capital', region: 'brussels' as const, language: 'bilingual' as const, seats: 15, population: 1200000 },
-        { id: 'antwerp', name: 'Antwerp', region: 'flanders' as const, language: 'dutch' as const, seats: 20, population: 1800000 }
-    ]);
-    state = constResult.state;
-
-    // Create Issues
-    const issueResult = createEntities(state, createIssue, [
-        { id: 'economy', name: 'Economic Growth', category: 'economic' as const, salience: 80 },
-        { id: 'environment', name: 'Climate Action', category: 'environmental' as const, salience: 60 }
-    ]);
-    state = issueResult.state;
-
-    // Create Politicians
-    const polResult = createEntities(state, createPolitician, [
-        { id: 'player_leader', name: 'Player Leader', partyId: playerPartyId, isLeader: true },
-        { id: 'opp_leader', name: 'Opp Leader', partyId: oppositionPartyId, isLeader: true }
-    ]);
-    state = polResult.state;
-
-    // Set initial phase
-    state.globals.currentPhase = 'campaign';
-
+    // Start with empty state in setup phase
+    const state = createEmptyState();
+    state.globals.currentPhase = 'setup';
     return state;
 };
 
 const gameReducer = (state: GameState, action: Action): GameState => {
     switch (action.type) {
+        case 'START_GAME': {
+            const { playerPartyId } = action.payload;
+            return createScenarioState({ playerPartyId });
+        }
         case 'PERFORM_ACTION': {
-            const { actionType } = action.payload;
+            const { actionType, targetConstituencyId, focusIssueId } = action.payload;
 
             // Map old action types to new CampaignActionType
             let type: CampaignActionType | undefined;
@@ -80,11 +47,11 @@ const gameReducer = (state: GameState, action: Action): GameState => {
 
             if (!type) return state; // Unknown action
 
-            const gameAction: GameAction = {
+            const gameAction: CampaignAction = {
                 type,
                 actor: state.globals.playerParty,
-                // Add other fields if needed, e.g. target constituency
-                // For now, we assume global or random target if not specified
+                constituency: targetConstituencyId,
+                issue: focusIssueId
             };
 
             const result = campaignSystem.processAction(state, gameAction);
@@ -210,8 +177,8 @@ const gameReducer = (state: GameState, action: Action): GameState => {
 export const useGameLogic = () => {
     const [gameState, dispatch] = useReducer(gameReducer, undefined, initializeGame);
 
-    const handleAction = useCallback((actionType: ActionType, targetDemographic?: EntityId) => {
-        dispatch({ type: 'PERFORM_ACTION', payload: { actionType, targetDemographic } });
+    const handleAction = useCallback((actionType: ActionType, targetConstituencyId?: string, focusIssueId?: string) => {
+        dispatch({ type: 'PERFORM_ACTION', payload: { actionType, targetConstituencyId, focusIssueId } });
     }, [dispatch]);
 
     const endTurn = useCallback(() => {
@@ -259,6 +226,10 @@ export const useGameLogic = () => {
         dispatch({ type: 'VOTE_LEGISLATION', payload: { law } });
     }, [dispatch]);
 
+    const startGame = useCallback((playerPartyId: string) => {
+        dispatch({ type: 'START_GAME', payload: { playerPartyId } });
+    }, [dispatch]);
+
     return {
         gameState,
         handleAction,
@@ -273,6 +244,7 @@ export const useGameLogic = () => {
         reorderList,
         resolveCrisis: resolveCrisisHandler,
         voteOnLegislation: voteOnLegislationHandler,
-        updateAutoCampaign
+        updateAutoCampaign,
+        startGame
     };
 };

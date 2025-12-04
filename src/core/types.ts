@@ -155,7 +155,7 @@ export interface TransientStatus {
   approvalPenalty?: number;
 
   // Cooldowns
-  lastCampaignAction?: number;        // Turn number
+  lastActionTurn?: number;            // Turn number of last action
   negotiationCooldown?: number;       // Turns remaining
 }
 
@@ -194,6 +194,9 @@ export interface PartyPlatform {
 
   // Manifesto promises
   manifestoPromises?: string[];
+
+  // Party Traits
+  traits?: PartyTrait[];
 }
 
 /**
@@ -243,6 +246,7 @@ export interface BillData {
     against: EntityId[];
     abstain: EntityId[];
   };
+  voteBreakdown?: Record<EntityId, 'for' | 'against' | 'abstain'>; // Detailed record
 }
 
 // ============================================================================
@@ -276,11 +280,18 @@ export interface Components {
 // GAME STATE
 // ============================================================================
 
+export interface PartyTrait {
+  id: string;
+  name: string;
+  description: string;
+  effect: ModifierEffect;
+}
+
 /**
  * GamePhase - Current phase of the game
  */
 export type GamePhase =
-  | 'setup'
+  | 'setup'          // New: Party selection
   | 'campaign'
   | 'election'
   | 'consultation'   // King consults with parties
@@ -316,6 +327,7 @@ export interface Coalition {
   portfolioAllocation: Record<string, EntityId>; // Ministry -> Party
   frictionLevel: number;                         // 0-100
   stabilityScore: number;                        // 0-100
+  governmentStability?: number;                  // 0-100, overall health of the government
 }
 
 /**

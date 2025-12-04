@@ -6,34 +6,30 @@
  */
 
 import { Target, TrendingUp, Users } from 'lucide-react';
-import type { World } from '@/core';
-import { TOTAL_PARLIAMENT_SEATS } from '@/core';
-
-const TOTAL_SEATS = TOTAL_PARLIAMENT_SEATS;
-const MAJORITY_SEATS = Math.floor(TOTAL_SEATS / 2) + 1;
-
-// Type aliases for backwards compatibility
-type GameState = World;
-type PartyId = string;
-
-// Placeholder functions - need to be implemented in core
-const calculateSeatProjections = (_gameState: GameState): Array<{ partyId: PartyId; projectedSeats: number }> => [];
-const isProjectedMajority = (_gameState: GameState): boolean => false;
+import type { GameState } from '@/core';
+import {
+    getPartyPolling,
+    projectSeats,
+    getTotalSeats
+} from '@/core';
 
 interface VictoryWidgetProps {
     gameState: GameState;
 }
 
 export const VictoryWidget = ({ gameState }: VictoryWidgetProps) => {
-    const projections = calculateSeatProjections(gameState);
-    const playerProjection = projections.find(p => p.partyId === gameState.playerPartyId);
-    const projectedSeats = playerProjection?.projectedSeats || 0;
-    const hasMajority = isProjectedMajority(gameState);
+    const playerPartyId = gameState.globals.playerParty;
+    const totalSeats = getTotalSeats(gameState);
+    const majorityThreshold = Math.floor(totalSeats / 2) + 1;
 
-    const progressPercentage = (projectedSeats / MAJORITY_SEATS) * 100;
+    // Use ECS queries for real data
+    const projectedSeats = projectSeats(gameState, playerPartyId);
+    const polling = getPartyPolling(gameState, playerPartyId);
 
-    // const playerParty = gameState.parties[gameState.playerPartyId];
-
+    // Determine if we have a majority (projected)
+    const hasMajority = projectedSeats >= majorityThreshold;
+    const progressPercentage = (projectedSeats / majorityThreshold) * 100;
+    const seatsNeeded = Math.max(0, majorityThreshold - projectedSeats);
 
     return (
         <div className="bg-gradient-to-br from-indigo-900 to-purple-900 p-6 rounded-xl shadow-lg border border-indigo-700">
@@ -57,7 +53,7 @@ export const VictoryWidget = ({ gameState }: VictoryWidgetProps) => {
                         Projected Seats
                     </span>
                     <span className="font-mono font-bold text-white">
-                        {projectedSeats} / {MAJORITY_SEATS}
+                        {projectedSeats} / {majorityThreshold}
                     </span>
                 </div>
 
@@ -71,8 +67,8 @@ export const VictoryWidget = ({ gameState }: VictoryWidgetProps) => {
 
                 <div className="flex justify-between text-xs text-indigo-300 mt-1">
                     <span>0</span>
-                    <span className="font-bold">Majority: {MAJORITY_SEATS}</span>
-                    <span>{TOTAL_SEATS}</span>
+                    <span className="font-bold">Majority: {majorityThreshold}</span>
+                    <span>{totalSeats}</span>
                 </div>
             </div>
 
@@ -87,7 +83,7 @@ export const VictoryWidget = ({ gameState }: VictoryWidgetProps) => {
                         <span className="font-bold">Projected to win majority! Keep campaigning to secure victory.</span>
                     ) : (
                         <span>
-                            Need <span className="font-bold text-yellow-300">{MAJORITY_SEATS - projectedSeats} more seats</span> for majority.
+                            Need <span className="font-bold text-yellow-300">{seatsNeeded} more seats</span> for majority.
                             Coalition will be required.
                         </span>
                     )}
@@ -99,14 +95,14 @@ export const VictoryWidget = ({ gameState }: VictoryWidgetProps) => {
                 <div className="bg-indigo-950/50 p-3 rounded-lg border border-indigo-800">
                     <div className="text-xs text-indigo-300 mb-1">Current Polling</div>
                     <div className="text-lg font-bold text-white">
-                        {(Object.values((gameState.parties as any).player.constituencyPolling as Record<string, number>).reduce((a, b) => a + b, 0) /
-                            Object.values((gameState.parties as any).player.constituencyPolling).length).toFixed(1)}%
+                        {polling.toFixed(1)}%
                     </div>
                 </div>
                 <div className="bg-indigo-950/50 p-3 rounded-lg border border-indigo-800">
                     <div className="text-xs text-indigo-300 mb-1">Turns Remaining</div>
                     <div className="text-lg font-bold text-white">
-                        {gameState.maxTurns - gameState.turn}
+                        {/* Assuming maxTurns is 20 for now, or we need to add it to Globals */}
+                        {20 - gameState.globals.currentTurn}
                     </div>
                 </div>
             </div>

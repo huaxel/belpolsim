@@ -54,7 +54,7 @@ Before writing code, we align on the objective.
 
 **1. Design & UX**
    - **Frontend Specialist** outlines the *User Flow* (e.g., "Slider interaction -> Real-time emoji update").
-   - **Systems Architect** defines the *Data Model* in `types.ts`.
+   - **Systems Architect** defines the way to build it following the hybrid ECS-OOP structure. ECS for data, OOP for logic.
 
 **2. Core Implementation**
    - **Logic Engineer** implements the math in `engine/` (e.g., `calculateFriction()`).

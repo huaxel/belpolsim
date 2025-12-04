@@ -112,6 +112,7 @@ export {
 // =============================================================================
 export {
   createEmptyState,
+  createScenarioState,
   createParty,
   createPolitician,
   createConstituency,

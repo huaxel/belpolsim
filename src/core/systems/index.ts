@@ -18,3 +18,4 @@ export { CoalitionSystem, coalitionSystem, MAJORITY_THRESHOLD } from './coalitio
 
 // Governing Phase
 export { GoverningSystem, governingSystem } from './governing';
+export { LegislativeSystem, legislativeSystem } from './legislative';

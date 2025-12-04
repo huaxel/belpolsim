@@ -46,6 +46,22 @@ const MAP_PATHS: Record<ConstituencyId, string> = {
     luxembourg: "M90,100 L120,80 L130,120 L80,120 Z"
 };
 
+// Map SVG keys to Game Entity IDs
+const ID_MAPPING: Record<string, string> = {
+    antwerp: 'constituency:antwerp',
+    liege: 'constituency:liege',
+    brussels_capital: 'constituency:brussels',
+    // Map others to potential future IDs or keep as is if not implemented
+    west_flanders: 'constituency:west_flanders',
+    east_flanders: 'constituency:east_flanders',
+    flemish_brabant: 'constituency:flemish_brabant',
+    limburg: 'constituency:limburg',
+    walloon_brabant: 'constituency:walloon_brabant',
+    hainaut: 'constituency:hainaut',
+    namur: 'constituency:namur',
+    luxembourg: 'constituency:luxembourg'
+};
+
 // Center points for labels
 const MAP_LABELS: Record<ConstituencyId, { x: number, y: number }> = {
     west_flanders: { x: 30, y: 55 },
@@ -107,15 +123,21 @@ export const BelgiumMap = ({ gameState, selectedConstituency, onSelect }: Belgiu
                 <svg viewBox="0 0 140 130" className="w-full h-full drop-shadow-2xl">
                     {Object.entries(MAP_PATHS).map(([id, path]) => {
                         const cId = id as ConstituencyId;
-                        const isSelected = selectedConstituency === `const-${cId}`;
+                        const entityId = ID_MAPPING[cId]; // Only get mapped IDs
+                        const isSelected = entityId && selectedConstituency === entityId;
                         const fillColor = getLeadingPartyColor(cId);
+                        const isInteractive = !!entityId;
 
                         return (
-                            <g key={cId} onClick={() => onSelect(cId)} className="cursor-pointer transition-all hover:opacity-80">
+                            <g
+                                key={cId}
+                                onClick={() => isInteractive && onSelect(entityId)}
+                                className={`transition-all ${isInteractive ? 'cursor-pointer hover:opacity-80' : 'opacity-50 cursor-not-allowed'}`}
+                            >
                                 <path
                                     d={path}
-                                    fill={fillColor}
-                                    stroke={isSelected ? "#eab308" : "#1e293b"}
+                                    fill={isInteractive ? fillColor : '#1e293b'} // Darker for unimplemented
+                                    stroke={isSelected ? "#eab308" : "#334155"}
                                     strokeWidth={isSelected ? "2" : "0.5"}
                                     className="transition-colors duration-300"
                                 />
@@ -130,7 +152,8 @@ export const BelgiumMap = ({ gameState, selectedConstituency, onSelect }: Belgiu
                     {/* Labels */}
                     {Object.entries(MAP_LABELS).map(([id, pos]) => {
                         const cId = id as ConstituencyId;
-                        const isSelected = selectedConstituency === `const-${cId}`;
+                        const entityId = ID_MAPPING[cId] || cId;
+                        const isSelected = selectedConstituency === entityId;
                         return (
                             <text
                                 key={`label-${cId}`}

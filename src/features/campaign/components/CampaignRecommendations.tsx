@@ -1,11 +1,10 @@
 import React from 'react';
 import { Lightbulb, AlertCircle, CheckCircle, ArrowRight } from 'lucide-react';
-import type { World, DemographicGroup } from '@/core';
+import type { World, DemographicGroup, CampaignActionType } from '@/core';
 
 // Type aliases for backwards compatibility
 type GameState = World;
 type ConstituencyId = string;
-type CampaignActionType = 'social_media' | 'tv_ad' | 'newspaper' | 'radio' | 'door_to_door' | 'rally';
 
 // Placeholder for generateRecommendations until implemented in core
 const generateRecommendations = (_gameState: GameState): Array<{
@@ -22,7 +21,7 @@ const CONSTITUENCIES: Record<string, { name: string }> = {};
 
 interface CampaignRecommendationsProps {
     gameState: GameState;
-    onQuickAction: (constId: ConstituencyId, action: CampaignActionType, demo?: DemographicGroup) => void;
+    onQuickAction: (constId: ConstituencyId, action: CampaignActionType) => void;
 }
 
 export const CampaignRecommendations: React.FC<CampaignRecommendationsProps> = ({
@@ -73,7 +72,7 @@ export const CampaignRecommendations: React.FC<CampaignRecommendationsProps> = (
                             </div>
 
                             <button
-                                onClick={() => onQuickAction(rec.constituencyId, rec.recommendedAction, rec.recommendedDemographic)}
+                                onClick={() => onQuickAction(rec.constituencyId, rec.recommendedAction)}
                                 className="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs rounded flex items-center transition-colors"
                             >
                                 Quick Action <ArrowRight size={12} className="ml-1" />

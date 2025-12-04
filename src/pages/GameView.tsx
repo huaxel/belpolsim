@@ -4,11 +4,13 @@ import { useGameLogic } from '@/shared/hooks/useGameLogic';
 import { mapECSToLegacyState } from '@/shared/utils/legacyMapper';
 import { Layout, EventLog, EventModal, ToastProvider } from '@/shared/components';
 import { BelgiumMap } from '@/features/map';
-import { PollingDashboard, ParliamentView } from '@/features/election';
-import { CampaignDashboard } from '@/features/campaign';
+import { PollingDashboard } from '@/features/election';
+import { CampaignDashboard } from '@/features/campaign/components/CampaignDashboard';
 import { CoalitionInterface, KingsPalace } from '@/features/coalition';
-import { GovernmentDashboard, CrisisModal } from '@/features/governing';
+import { CrisisModal } from '@/features/governing';
+import { ParliamentView } from '@/features/governing/components/ParliamentView';
 import { PartyListEditor } from '@/features/politicians';
+import { PartySelectionView } from '@/features/setup/components/PartySelectionView';
 
 interface GameViewProps {
     shouldLoad: boolean;
@@ -29,8 +31,8 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
         dispatch,
         reorderList,
         resolveCrisis,
-        voteOnLegislation,
-        updateAutoCampaign
+        updateAutoCampaign,
+        startGame
     } = useGameLogic();
 
     // Map ECS state to legacy format for UI compatibility
@@ -47,30 +49,50 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
     }, [shouldLoad, loadGame]);
 
     const renderContent = () => {
+        // Handle Setup Phase
+        if (gameState.globals.currentPhase === 'setup') {
+            return (
+                <div className="animate-in fade-in duration-500">
+                    <PartySelectionView onSelect={startGame} />
+                </div>
+            );
+        }
 
         switch (activeView) {
             case 'dashboard':
                 return (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in duration-500">
                         <div className="lg:col-span-2 space-y-6">
-                            {gameState.gamePhase === 'campaign' && (
+                            {gameState.globals.currentPhase === 'campaign' && (
                                 <CampaignDashboard
                                     gameState={gameState}
-                                    selectedConstituency={gameState.globals.selectedConstituency}
-                                    onPerformAction={(actionType: any, targetDemographic: any) => {
-                                        handleAction(actionType, targetDemographic);
+                                    selectedConstituency={gameState.globals.selectedConstituency || ''}
+                                    onPerformAction={(actionType, targetConstituencyId, focusIssueId) => {
+                                        handleAction(actionType, targetConstituencyId, focusIssueId);
                                     }}
                                     onSelectConstituency={setSelectedConstituency}
                                     onUpdateAutoCampaign={updateAutoCampaign}
                                 />
                             )}
-                            {legacyState.gamePhase === 'governing' && (
-                                <GovernmentDashboard
-                                    gameState={legacyState}
-                                    onUpdateState={(newState: any) => dispatch({ type: 'LOAD_GAME', payload: newState })}
+
+                            {gameState.globals.currentPhase === 'governing' && (
+                                <ParliamentView
+                                    gameState={gameState}
+                                    dispatch={dispatch}
                                 />
                             )}
-                            <PollingDashboard gameState={legacyState} />
+
+                            {/* Fallback for other phases */}
+                            {gameState.globals.currentPhase !== 'campaign' && gameState.globals.currentPhase !== 'governing' && (
+                                <div className="bg-white/10 backdrop-blur-md rounded-xl p-8 text-center border border-white/10">
+                                    <h2 className="text-2xl font-bold text-white mb-2">
+                                        Phase: {gameState.globals.currentPhase}
+                                    </h2>
+                                    <p className="text-indigo-200">
+                                        This phase is under construction.
+                                    </p>
+                                </div>
+                            )}
                         </div>
                         <div className="space-y-6">
                             <EventLog logs={legacyState.eventLog} />
@@ -115,7 +137,7 @@ export const GameView = ({ shouldLoad, onExit }: GameViewProps) => {
                             />
                         )}
                         {legacyState.gamePhase === 'governing' && (
-                            <ParliamentView gameState={legacyState} onVote={voteOnLegislation} />
+                            <ParliamentView gameState={gameState} dispatch={dispatch} />
                         )}
                         {legacyState.gamePhase === 'campaign' && (
                             <div className="text-center p-12 text-slate-500">
